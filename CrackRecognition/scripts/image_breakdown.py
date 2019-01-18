@@ -3,7 +3,8 @@ import argparse
 import os
 import shutil
 
-class ImageBreakdown(object):
+
+class ImageBreakdownModule(object):
 
     # Default width of an image sub-component as measured in pixels
     DEFAULT_WIDTH = 227
@@ -373,6 +374,7 @@ class ImageBreakdown(object):
 
     # End static functions
 
+
 if __name__ == '__main__':
-    image_breakdown = ImageBreakdown()
+    image_breakdown = ImageBreakdownModule()
     image_breakdown.run_module()

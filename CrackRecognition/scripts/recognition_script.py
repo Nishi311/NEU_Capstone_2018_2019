@@ -25,7 +25,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class RecognitionUnit(object):
+class RecognitionModule(object):
 
     def __init__(self):
         self.file_name = ""
@@ -152,5 +152,5 @@ class RecognitionUnit(object):
 
 
 if __name__ == "__main__":
-    recognition_unit = RecognitionUnit()
-    recognition_unit.run_module()
+    recongition_module = RecognitionModule()
+    recongition_module.run_module()

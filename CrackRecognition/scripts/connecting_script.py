@@ -1,9 +1,8 @@
 import os
 import argparse
 
-import recognition_script
-
-from .image_breakdown import
+from .image_breakdown import ImageBreakdownModule
+from .recognition_script import RecognitionModule
 
 
 class UnifiedRecognition(object):
@@ -27,6 +26,7 @@ class UnifiedRecognition(object):
         self.cropped_px_width = self.DEFAULT_WIDTH
         self.cropped_px_height = self.DEFAULT_HEIGHT
         self.ignoreLeftoverPixels = False
+        self.skip_breakdown = False
 
         # Variables related to image recognition
         self.graph_name = self.DEFAULT_GRAPH_FILENAME
@@ -37,11 +37,14 @@ class UnifiedRecognition(object):
         args = self.set_args()
         self.parse_args(args)
 
+        if
+
     def set_args(self):
         """
         Sets the command line arguments necessary to operate the ImageBreakdown class.
         :return the interpreted arguments.
         """
+        #TODO : Clean up options. Need to be clear delineations between functions.
         connection_parser = argparse.ArgumentParser(description='Breaks down the given image into smaller chunks '
                                                                      'of the given size and stores them in the given '
                                                                      'directory')
@@ -53,10 +56,17 @@ class UnifiedRecognition(object):
                                             'images will be stored. Or a relative path from where this script is '
                                             'called from. If the directory already exists, it will be overwritten. '
                                             'If it does not exist, it will be made.')
-        connection_parser.add_argument('-w', '--subImageWidth', type=int, help='How many pixels wide each sub-image '
+        connection_parser.add_argument('-w', '--SubImageWidth', type=int, help='How many pixels wide each sub-image '
                                                                                'should be. Defaults to 227px')
-        connection_parser.add_argument('-t', '--subImageHeight', type=int,  help='How many pixels tall each sub-image '
+        connection_parser.add_argument('-t', '--SubImageHeight', type=int,  help='How many pixels tall each sub-image '
                                                                                  'should be. Defaults to 227px')
+
+        connection_parser.add_argument("--SkipBreakdown",store=True, help="Skip the breakdown process and attempt to"
+                                                                          "run recognition on an exiting image. WILL"
+                                                                          "ASSUME THAT THE IMAGE IS OF EITHER DEFAULT"
+                                                                          "DIMENSIONS OR OF SPECIFIED SUB-IMAGE "
+                                                                          "WIDTH/HEIGHT.")
+
         connection_parser.add_argument('-p', '--ignoreLeftoverPixels', action='store_true',
                                        help='If the image width or height is not cleanly divisible by the '
                                             'given sub-image width / height values, there will be leftover '
@@ -71,7 +81,7 @@ class UnifiedRecognition(object):
                                                                                    "labels to be used for crack "
                                                                                    "recognition. Can also be relative"
                                                                                    "path from where script is executed.")
-
+        connection_parser.add_argument("--use")
         return connection_parser.parse_args()
 
     def parse_args(self, args):
@@ -85,12 +95,14 @@ class UnifiedRecognition(object):
                 self.full_image_filepath = args.inputPath
             if args.outputDir:
                 self.cropped_subcomponent_dir_filepath = args.outputDir
-            if args.subImageWidth:
+            if args.SubImageWidth:
                 self.cropped_px_width = args.subImageWidth
-            if args.subImageHeight:
+            if args.SubImageHeight:
                 self.cropped_px_height = args.subImageHeight
             if args.ignoreLeftoverPixels:
                 self.ignoreLeftoverPixels = True
+            if args.SkipBreakdown:
+                self.skip_breakdown = True
             if args.recognitionGraph:
                 self.graph_name = args.recognitionGraph
             if args.recognitionLabels:
@@ -99,7 +111,7 @@ class UnifiedRecognition(object):
             self.exit_with_error_msg("No arguments given!")
 
     def call_image_breakdown(self):
-
+        pass
 
     @staticmethod
     def exit_with_error_msg(error_message):
