@@ -1,1 +1,1 @@
---graph ../retrained_model/output_graph.pb --labels ../retrained_model/output_labels.txt --input_layer Placeholder --output_layer final_result --image ../photos/brokendown_images/test_image_r0_c0.jpg
+--graph ../retrained_model/crack_detection_graph.pb --labels ../retrained_model/crack_detection_labels.txt --input_layer Placeholder --output_layer final_result --image ../photos/brokendown_images/test_image_r0_c0.jpg

@@ -34,7 +34,7 @@ class ImageBreakdown(object):
         self._cropped_subcomponent_dir = ""
 
         # Control flag that will let the breakdown function ignore any left over pixels.
-        self._ignore_leftover_pixels = False
+        self._ignoreLeftoverPixels = False
 
     # Begin ALL properties
 
@@ -161,12 +161,12 @@ class ImageBreakdown(object):
     # Begin control properties
 
     @property
-    def ignore_leftover_pixels(self):
-        return self._ignore_leftover_pixels
+    def ignoreLeftoverPixels(self):
+        return self._ignoreLeftoverPixels
 
-    @ignore_leftover_pixels.setter
-    def ignore_leftover_pixels(self, will_ignore_leftover_pixels):
-        self._ignore_leftover_pixels = will_ignore_leftover_pixels
+    @ignoreLeftoverPixels.setter
+    def ignoreLeftoverPixels(self, will_ignoreLeftoverPixels):
+        self._ignoreLeftoverPixels = will_ignoreLeftoverPixels
 
     # End control properties
 
@@ -204,24 +204,23 @@ class ImageBreakdown(object):
         image_breakdown_parser = argparse.ArgumentParser(description='Breaks down the given image into smaller chunks '
                                                                      'of the given size and stores them in the given '
                                                                      'directory')
-        image_breakdown_parser.add_argument('--input_path', type=str, required=True,
-                                            help='[REQUIRED] The absolute path to the image that will be broken down. '
-                                                 'Or a relative path to the image from where this script is called from')
-        image_breakdown_parser.add_argument('--output_dir', type=str, required=True,
-                                            help='[REQUIRED] The absolute path to the directory where the smaller '
-                                                 'images will be stored. Or a relative path from where this script is '
-                                                 'called from. If the directory already exists, it will be overwritten. '
-                                                 'If it does not exist, it will be made.')
-        image_breakdown_parser.add_argument('--sub_image_width', type=int, help='How many pixels wide each sub-image '
+        image_breakdown_parser.add_argument('-i', '--inputPath', type=str, required=True,
+                                       help='[REQUIRED] The absolute path to the image that will be broken down. '
+                                            'Or a relative path to the image from where this script is called from')
+        image_breakdown_parser.add_argument('-o', '--outputDir', type=str, required=True,
+                                       help='[REQUIRED] The absolute path to the directory where the smaller '
+                                            'images will be stored. Or a relative path from where this script is '
+                                            'called from. If the directory already exists, it will be overwritten. '
+                                            'If it does not exist, it will be made.')
+        image_breakdown_parser.add_argument('-w', '--subImageWidth', type=int, help='How many pixels wide each sub-image '
+                                                                               'should be. Defaults to 227px')
+        image_breakdown_parser.add_argument('-t', '--subImageHeight', type=int, help='How many pixels tall each sub-image '
                                                                                 'should be. Defaults to 227px')
-
-        image_breakdown_parser.add_argument('--sub_image_height', type=int,  help='How many pixels tall each sub-image '
-                                                                                  'should be. Defaults to 227px')
-        image_breakdown_parser.add_argument('--ignore_leftover_pixels', action='store_true',
-                                            help='If the image width or height is not cleanly divisible by the '
-                                                 'given sub-image width / height values, there will be leftover '
-                                                 'pixels. This flag will prevent those leftovers from being made '
-                                                 'into their own non-regulation-sized sub-images.')
+        image_breakdown_parser.add_argument('-p', '--ignoreLeftoverPixels', action='store_true',
+                                       help='If the image width or height is not cleanly divisible by the '
+                                            'given sub-image width / height values, there will be leftover '
+                                            'pixels. This flag will prevent those leftovers from being made '
+                                            'into their own non-regulation-sized sub-images.')
         return image_breakdown_parser.parse_args()
 
     def parse_args(self, args):
@@ -231,16 +230,16 @@ class ImageBreakdown(object):
         """
 
         if args:
-            if args.input_path:
-                self.full_image_filepath = args.input_path
-            if args.output_dir:
-                self.cropped_subcomponent_dir = args.output_dir
-            if args.sub_image_width:
-                self.cropped_px_width = args.sub_image_width
-            if args.sub_image_height:
-                self.cropped_px_height = args.sub_image_height
-            if args.ignore_leftover_pixels:
-                self.ignore_leftover_pixels = True
+            if args.inputPath:
+                self.full_image_filepath = args.inputPath
+            if args.outputDir:
+                self.cropped_subcomponent_dir = args.outputDir
+            if args.subImageWidth:
+                self.cropped_px_width = args.subImageWidth
+            if args.subImageHeight:
+                self.cropped_px_height = args.subImageHeight
+            if args.ignoreLeftoverPixels:
+                self.ignoreLeftoverPixels = True
         else:
             self.exit_with_error_msg("No arguments given!")
 
@@ -254,10 +253,10 @@ class ImageBreakdown(object):
         This function goes row by row and column by column to save sub-images of size cropped_px_width x cropped_px_height.
         If either cropped_px_width or cropped_px_height do not divide cleanly into the full image dimensions, it will
         still save those oddly-sized sub-images unless explicitly told not to by the ImageBreakdown parameter
-        'ignore_leftover_pixels'.
+        'ignoreLeftoverPixels'.
         """
 
-        if not self.ignore_leftover_pixels:
+        if not self.ignoreLeftoverPixels:
             leftover_width_pixels = int(self.full_px_width % self.cropped_px_width)
             leftover_height_pixels = int(self.full_px_height % self.cropped_px_height)
         else:
