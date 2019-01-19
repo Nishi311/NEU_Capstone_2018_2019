@@ -38,32 +38,40 @@ class RecognitionModule(object):
         self.input_layer = "input"
         self.output_layer = "InceptionV3/Predictions/Reshape_1"
 
-    def run_module(self):
-        args = self.set_args()
+        self.graph = None
+
+    def setup_module(self, args=""):
+        if not args:
+            args = self.set_args()
         self.parse_args(args)
 
-        graph = self.load_graph(self.model_file)
-        t = self.read_tensor_from_image_file(
-            self.file_name,
-            input_height=self.input_height,
-            input_width=self.input_width,
-            input_mean=self.input_mean,
-            input_std=self.input_std)
+        self.graph = self.load_graph(self.model_file)
 
-        input_name = "import/" + self.input_layer
-        output_name = "import/" + self.output_layer
-        input_operation = graph.get_operation_by_name(input_name)
-        output_operation = graph.get_operation_by_name(output_name)
+    def run_module(self):
+        if self.graph:
+            t = self.read_tensor_from_image_file(
+                self.file_name,
+                input_height=self.input_height,
+                input_width=self.input_width,
+                input_mean=self.input_mean,
+                input_std=self.input_std)
 
-        with tf.Session(graph=graph) as sess:
-            results = sess.run(output_operation.outputs[0], {
-                input_operation.outputs[0]: t})
-        results = np.squeeze(results)
+            input_name = "import/" + self.input_layer
+            output_name = "import/" + self.output_layer
+            input_operation = self.graph.get_operation_by_name(input_name)
+            output_operation = self.graph.get_operation_by_name(output_name)
 
-        top_k = results.argsort()[-5:][::-1]
-        labels = self.load_labels(self.label_file)
-        for i in top_k:
-            print(labels[i], results[i])
+            with tf.Session(graph=self.graph) as sess:
+                results = sess.run(output_operation.outputs[0], {
+                    input_operation.outputs[0]: t})
+            results = np.squeeze(results)
+
+            top_k = results.argsort()[-5:][::-1]
+            labels = self.load_labels(self.label_file)
+            for i in top_k:
+                print(labels[i], results[i])
+        else:
+            self.exit_with_error_msg("recognition_script, run_module(): No graph set. Was setup run? Exiting.")
 
     def set_args(self):
         recognition_parser = argparse.ArgumentParser()
@@ -150,7 +158,16 @@ class RecognitionModule(object):
             label.append(l.rstrip())
         return label
 
+    @staticmethod
+    def exit_with_error_msg(error_message):
+        """
+        exit the program with code 1 (failure) and print out the given message.
+        :param error_message: The error message to print out
+        """
+        print(error_message)
+        exit(1)
 
 if __name__ == "__main__":
     recongition_module = RecognitionModule()
+    recongition_module.setup_module()
     recongition_module.run_module()
