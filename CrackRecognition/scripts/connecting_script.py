@@ -287,12 +287,12 @@ class UnifiedRecognitionModule(object):
             final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
             final_report_file.write("Neg > Pos Image reports: \n")
             for report in negative_report_list:
-                final_report_file.write("{0}\n".format(report))
+                final_report_file.write("{0}".format(report))
 
             final_report_file.write("Pos > Neg Image count: {0}\n".format(len(positive_report_list)))
             final_report_file.write("Pos > Neg Image reports: \n")
             for report in positive_report_list:
-                final_report_file.write("{0}\n".format(report))
+                final_report_file.write("{0}".format(report))
 
             final_report_file.close()
         else:
