@@ -31,7 +31,6 @@ class UnifiedRecognitionModule(object):
     # Default short path for intermediary reports
     DEFAULT_INTER_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "individual_reports")
 
-
     # Default parameter for recognition input mean (dunno exactly what that is)
     DEFAULT_INPUT_MEAN = 0
 
@@ -56,10 +55,15 @@ class UnifiedRecognitionModule(object):
         self.cropped_image_filepath = ""
         self.report_path = ""
 
+        # self-contained modules for use in breaking down then recognizing images.
         self.image_breakdown_module = ImageBreakdownModule()
         self.recognition_module = RecognitionModule()
 
     def run_module(self):
+        """
+        Primary function that runs everything. Sets up directories, calls for image breakdown
+        and recognition.
+        """
         args = self.set_args()
         self.parse_args(args)
 
@@ -90,12 +94,23 @@ class UnifiedRecognitionModule(object):
                 # Get a list of the sub-images.
                 broken_down_images = glob.glob(os.path.join(self.cropped_subcomponent_dir_filepath, "*"))
 
+                # Set up the report output directory for this photo.
+                individual_photo_report_filepath = os.path.join(self.DEFAULT_INTER_REPORT_FILEPATH,
+                                                                os.path.split(photo_path)[1].split(".")[0])
+                if os.path.exists(individual_photo_report_filepath):
+                    self.wipe_directory(individual_photo_report_filepath)
+                else:
+                    os.mkdir(individual_photo_report_filepath)
+                self.recognition_module.report_location = individual_photo_report_filepath
+
                 # run recognition on all sub-images
                 for sub_photo_path in broken_down_images:
                     self.recognition_module.input_filepath = sub_photo_path
                     self.recognition_module.run_module()
+                # parse the resulting sub-reports into one single report for the image.
+                self.sub_report_parser(individual_photo_report_filepath)
                 # wipe the sub-image directory to make room for the next set.
-                # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
+                self.wipe_directory(self.cropped_subcomponent_dir_filepath)
 
     def set_args(self):
         """
@@ -178,6 +193,11 @@ class UnifiedRecognitionModule(object):
             self.exit_with_error_msg("No arguments given!")
 
     def setup_image_breakdown_arguments(self, input_filepath):
+        """
+        Creates the namespace that can be given to the image breakdown module to use as arguments.
+        :param input_filepath: The filepath to the image that will be broken down.
+        :return: a namespace that can be fed into the image breakdown module
+        """
         breakdown_arg_namespace = SimpleNamespace()
 
         # Specific checks for required fields.
@@ -202,6 +222,12 @@ class UnifiedRecognitionModule(object):
         return breakdown_arg_namespace
 
     def setup_recognition_arguments(self):
+        """
+        Creates the namespace that can be given to the recognition module to use as arguments. NOTE:
+        DOES NOT SET THE IMAGE THAT WILL BE ANALYSED. That must be be done on a case-by-case basis outside
+        of this function.
+        :return: a namespace that can be fed into the recognition module
+        """
         recog_arg_namespace = SimpleNamespace()
 
         # Name will need to be updated on an image-by-image basis. Leave blank for now
@@ -221,8 +247,62 @@ class UnifiedRecognitionModule(object):
 
         return recog_arg_namespace
 
+    def sub_report_parser(self, sub_report_dir):
+        """
+        Parses all the sub-reports found in the given directory into a single, fairly high level
+        overview of what the image is like in terms of positive and negative detection. Final report
+        will be output to the same directory.
+        :param sub_report_dir: The directory that needs to be parsed.
+        """
+        if os.path.exists(sub_report_dir):
+            list_of_reports = glob.glob(os.path.join(sub_report_dir, "*"))
+
+            positive_report_list = []
+            negative_report_list = []
+            report_name = os.path.split(sub_report_dir)[1]
+            # Go through all image sub reports
+            for report_path in list_of_reports:
+                with open(report_path) as r:
+                    report_lines = r.readlines()
+                # Go through all lines in that report and get values
+                for line in report_lines:
+                    if "Negative:" in line:
+                        neg_value = float(line.split("Negative:")[1])
+                    if "Positive:" in line:
+                        pos_value = float(line.split("Positive:")[1])
+                    if "Name:" in line:
+                        sub_report_name = line.split("Name:")[1]
+
+                if neg_value > pos_value:
+                    negative_report_list.append(sub_report_name)
+                else:
+                    positive_report_list.append(sub_report_name)
+                # Create the final report for the image, listing the number of neg > pos sub-images
+                # and pos > neg sub-images.
+                final_report_file = open(os.path.join(sub_report_dir,
+                                                      os.path.split(report_name+"_final_report.txt"), "w+"))
+                final_report_file.write("Name: {0}\n".format(report_name))
+                final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
+                final_report_file.write("Neg > Pos Image reports: \n")
+                for report in negative_report_list:
+                    final_report_file.write("{0}\n".format(report))
+
+                final_report_file.write("Pos > Neg Image count: {0}\n".format(len(positive_report_list)))
+                final_report_file.write("Pos > Neg Image reports: \n")
+                for report in positive_report_list:
+                    final_report_file.write("{0}\n".format(report))
+
+                final_report_file.close()
+        else:
+            self.exit_with_error_msg("connecting_script, sub_report_parser(): sub_report_dir {0} does not "
+                                     "exist! Exiting".format(sub_report_dir))
+
     @staticmethod
     def wipe_directory(directory_path):
+        """
+        Small helper function that will remove the given path then remake it.
+        :param directory_path: the path to wipe.
+        """
         if os.path.exists(directory_path):
             shutil.rmtree(directory_path)
             os.mkdir(directory_path)

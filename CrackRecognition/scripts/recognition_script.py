@@ -39,7 +39,7 @@ class RecognitionModule(object):
         self.input_std = 255
         self.input_layer = "input"
         self.output_layer = "InceptionV3/Predictions/Reshape_1"
-        self.summary_location = ""
+        self.report_location = ""
         self.graph = None
 
     def setup_module(self, args=""):
@@ -52,8 +52,7 @@ class RecognitionModule(object):
     def run_module(self):
 
         image_name = os.path.split(self.input_filepath)[1].split(".")[0]
-        report_path = os.path.join(os.path.dirname(__file__), self.DEFAULT_INTER_REPORT_FILEPATH, image_name +
-                                   "_report.txt")
+        report_path = os.path.join(self.report_location, image_name + "_report.txt")
         inter_report_file = open(report_path, "w+")
         inter_report_file.write("Name: {0}\n".format(image_name))
 
