@@ -1,6 +1,7 @@
 import os
 import argparse
 import glob
+import shutil
 
 from types import SimpleNamespace
 
@@ -18,8 +19,18 @@ class UnifiedRecognitionModule(object):
     # Default graph that will be used to detect cracks.
     DEFAULT_GRAPH_FILEPATH = os.path.join("..", "retrained_model", "crack_detection_graph.pb")
 
-    # Default labl set that will be used to label detection results.
+    # Default label set that will be used to label detection results.
     DEFAULT_LABEL_FILEPATH = os.path.join("..", "retrained_model", "crack_detection_labels.txt")
+
+    # location of the output directory relative to this script
+    OUTPUT_PATH = os.path.join("..", "output")
+
+    # Default output location for the final recognition report.
+    DEFAULT_FINAL_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "recognition_report.txt")
+
+    # Default short path for intermediary reports
+    DEFAULT_INTER_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "individual_reports")
+
 
     # Default parameter for recognition input mean (dunno exactly what that is)
     DEFAULT_INPUT_MEAN = 0
@@ -43,6 +54,7 @@ class UnifiedRecognitionModule(object):
         self.graph_filepath = self.DEFAULT_GRAPH_FILEPATH
         self.graph_labels_filepath = self.DEFAULT_LABEL_FILEPATH
         self.cropped_image_filepath = ""
+        self.report_path = ""
 
         self.image_breakdown_module = ImageBreakdownModule()
         self.recognition_module = RecognitionModule()
@@ -50,6 +62,13 @@ class UnifiedRecognitionModule(object):
     def run_module(self):
         args = self.set_args()
         self.parse_args(args)
+
+        # Remove previous output (if it exists)
+        if os.listdir(self.OUTPUT_PATH):
+            self.wipe_directory(self.OUTPUT_PATH)
+
+        if not os.path.exists(self.DEFAULT_INTER_REPORT_FILEPATH):
+            os.mkdir(self.DEFAULT_INTER_REPORT_FILEPATH)
 
         # Recognition module will only use one graph throughout its lifecycle.
         # set those parameters here. Will update individual files as needed.
@@ -73,7 +92,7 @@ class UnifiedRecognitionModule(object):
 
                 # run recognition on all sub-images
                 for sub_photo_path in broken_down_images:
-                    self.recognition_module.file_name = sub_photo_path
+                    self.recognition_module.input_filepath = sub_photo_path
                     self.recognition_module.run_module()
                 # wipe the sub-image directory to make room for the next set.
                 # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
@@ -121,6 +140,9 @@ class UnifiedRecognitionModule(object):
                                             "Can also be relative path from where script is executed.")
         connection_parser.add_argument('-l', '--recognitionLabelsPath', type=str,
                                        help="An absolute path to the non-default labels to be used for crack recognition. "
+                                            "Can also be relative path from where script is executed.")
+        connection_parser.add_argument('-r', '--reportLocation', type=str,
+                                       help="An absolute path to location where the summary report shall be output. "
                                             "Can also be relative path from where script is executed.")
 
         return connection_parser.parse_args()
@@ -173,6 +195,8 @@ class UnifiedRecognitionModule(object):
         # Otherwise, set parameters to either default or specified values without fuss.
         breakdown_arg_namespace.subImageWidth = self.cropped_px_width
         breakdown_arg_namespace.subImageHeight = self.cropped_px_height
+        # breakdown_arg_namespace.subImageWidth = 299
+        # breakdown_arg_namespace.subImageHeight = 299
         breakdown_arg_namespace.ignoreLeftoverPixels = True if self.ignore_leftover_pixels else False
 
         return breakdown_arg_namespace
@@ -181,12 +205,14 @@ class UnifiedRecognitionModule(object):
         recog_arg_namespace = SimpleNamespace()
 
         # Name will need to be updated on an image-by-image basis. Leave blank for now
-        recog_arg_namespace.image = ""
+        recog_arg_namespace.input_filepath = ""
 
         recog_arg_namespace.graph = self.graph_filepath
         recog_arg_namespace.labels = self.graph_labels_filepath
-        recog_arg_namespace.input_width = self.cropped_px_width
-        recog_arg_namespace.input_height = self.cropped_px_height
+        # recog_arg_namespace.input_width = self.cropped_px_width
+        # recog_arg_namespace.input_height = self.cropped_px_height
+        recog_arg_namespace.input_width = 299
+        recog_arg_namespace.input_height = 299
         recog_arg_namespace.input_layer = "Placeholder"
         recog_arg_namespace.output_layer = "final_result"
 
@@ -197,9 +223,9 @@ class UnifiedRecognitionModule(object):
 
     @staticmethod
     def wipe_directory(directory_path):
-        files_to_delete = glob.glob(directory_path)
-        for file in files_to_delete:
-            os.remove(file)
+        if os.path.exists(directory_path):
+            shutil.rmtree(directory_path)
+            os.mkdir(directory_path)
 
     @staticmethod
     def exit_with_error_msg(error_message):

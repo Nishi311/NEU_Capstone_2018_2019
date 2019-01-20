@@ -19,6 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import argparse
 
 import numpy as np
@@ -26,9 +27,10 @@ import tensorflow as tf
 
 
 class RecognitionModule(object):
+    DEFAULT_INTER_REPORT_FILEPATH = os.path.join("..", "output", "individual_reports")
 
     def __init__(self):
-        self.file_name = ""
+        self.input_filepath = ""
         self.model_file = ""
         self.label_file = ""
         self.input_height = 299
@@ -37,7 +39,7 @@ class RecognitionModule(object):
         self.input_std = 255
         self.input_layer = "input"
         self.output_layer = "InceptionV3/Predictions/Reshape_1"
-
+        self.summary_location = ""
         self.graph = None
 
     def setup_module(self, args=""):
@@ -48,9 +50,16 @@ class RecognitionModule(object):
         self.graph = self.load_graph(self.model_file)
 
     def run_module(self):
+
+        image_name = os.path.split(self.input_filepath)[1].split(".")[0]
+        report_path = os.path.join(os.path.dirname(__file__), self.DEFAULT_INTER_REPORT_FILEPATH, image_name +
+                                   "_report.txt")
+        inter_report_file = open(report_path, "w+")
+        inter_report_file.write("Name: {0}\n".format(image_name))
+
         if self.graph:
             t = self.read_tensor_from_image_file(
-                self.file_name,
+                self.input_filepath,
                 input_height=self.input_height,
                 input_width=self.input_width,
                 input_mean=self.input_mean,
@@ -68,15 +77,19 @@ class RecognitionModule(object):
 
             top_k = results.argsort()[-5:][::-1]
             labels = self.load_labels(self.label_file)
+
             for i in top_k:
                 print(labels[i], results[i])
+                inter_report_file.write("{0}: {1}\n".format(labels[i], results[i]))
+
+            inter_report_file.close()
         else:
             self.exit_with_error_msg("recognition_script, run_module(): No graph set. Was setup run? Exiting.")
 
     def set_args(self):
         recognition_parser = argparse.ArgumentParser()
 
-        recognition_parser.add_argument("--image", help="image to be processed")
+        recognition_parser.add_argument("--input_filepath", help="image to be processed")
         recognition_parser.add_argument("--graph", help="graph/model to be executed")
         recognition_parser.add_argument("--labels", help="name of file containing labels")
         recognition_parser.add_argument("--input_height", type=int, help="input height")
@@ -91,8 +104,8 @@ class RecognitionModule(object):
     def parse_args(self, args):
         if args.graph:
             self.model_file = args.graph
-        if args.image:
-            self.file_name = args.image
+        if args.input_filepath:
+            self.input_filepath = args.image
         if args.labels:
             self.label_file = args.labels
         if args.input_height:
@@ -122,21 +135,21 @@ class RecognitionModule(object):
         return graph
 
     @staticmethod
-    def read_tensor_from_image_file(file_name,
+    def read_tensor_from_image_file(input_filepath,
                                     input_height=299,
                                     input_width=299,
                                     input_mean=0,
                                     input_std=255):
         input_name = "file_reader"
         output_name = "normalized"
-        file_reader = tf.read_file(file_name, input_name)
-        if file_name.endswith(".png"):
+        file_reader = tf.read_file(input_filepath, input_name)
+        if input_filepath.endswith(".png"):
             image_reader = tf.image.decode_png(
                 file_reader, channels=3, name="png_reader")
-        elif file_name.endswith(".gif"):
+        elif input_filepath.endswith(".gif"):
             image_reader = tf.squeeze(
                 tf.image.decode_gif(file_reader, name="gif_reader"))
-        elif file_name.endswith(".bmp"):
+        elif input_filepath.endswith(".bmp"):
             image_reader = tf.image.decode_bmp(file_reader, name="bmp_reader")
         else:
             image_reader = tf.image.decode_jpeg(
