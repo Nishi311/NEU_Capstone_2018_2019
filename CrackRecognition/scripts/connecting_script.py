@@ -64,13 +64,14 @@ class UnifiedRecognitionModule(object):
         Primary function that runs everything. Sets up directories, calls for image breakdown
         and recognition.
         """
+        # set args and local parameters
         args = self.set_args()
         self.parse_args(args)
 
-        # Remove previous output (if it exists)
+        # wipe output directory (if populated)
         if os.listdir(self.OUTPUT_PATH):
             self.wipe_directory(self.OUTPUT_PATH)
-
+        # create the intermediary report directory if it doesn't alr.
         if not os.path.exists(self.DEFAULT_INTER_REPORT_FILEPATH):
             os.mkdir(self.DEFAULT_INTER_REPORT_FILEPATH)
 
@@ -265,13 +266,15 @@ class UnifiedRecognitionModule(object):
                 with open(report_path) as r:
                     report_lines = r.readlines()
                 # Go through all lines in that report and get values
+                neg_value = 0
+                pos_value = 0
                 for line in report_lines:
-                    if "Negative:" in line:
-                        neg_value = float(line.split("Negative:")[1])
-                    if "Positive:" in line:
-                        pos_value = float(line.split("Positive:")[1])
-                    if "Name:" in line:
-                        sub_report_name = line.split("Name:")[1]
+                    if "negative:" in line:
+                        neg_value = float(line.split("negative:")[1])
+                    if "positive:" in line:
+                        pos_value = float(line.split("positive:")[1])
+                    if "name:" in line:
+                        sub_report_name = line.split("name:")[1]
 
                 if neg_value > pos_value:
                     negative_report_list.append(sub_report_name)
@@ -279,20 +282,19 @@ class UnifiedRecognitionModule(object):
                     positive_report_list.append(sub_report_name)
                 # Create the final report for the image, listing the number of neg > pos sub-images
                 # and pos > neg sub-images.
-                final_report_file = open(os.path.join(sub_report_dir,
-                                                      os.path.split(report_name+"_final_report.txt"), "w+"))
-                final_report_file.write("Name: {0}\n".format(report_name))
-                final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
-                final_report_file.write("Neg > Pos Image reports: \n")
-                for report in negative_report_list:
-                    final_report_file.write("{0}\n".format(report))
+            final_report_file = open(os.path.join(sub_report_dir, report_name + "_final_report.txt"), "w+")
+            final_report_file.write("Name: {0}\n".format(report_name))
+            final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
+            final_report_file.write("Neg > Pos Image reports: \n")
+            for report in negative_report_list:
+                final_report_file.write("{0}\n".format(report))
 
-                final_report_file.write("Pos > Neg Image count: {0}\n".format(len(positive_report_list)))
-                final_report_file.write("Pos > Neg Image reports: \n")
-                for report in positive_report_list:
-                    final_report_file.write("{0}\n".format(report))
+            final_report_file.write("Pos > Neg Image count: {0}\n".format(len(positive_report_list)))
+            final_report_file.write("Pos > Neg Image reports: \n")
+            for report in positive_report_list:
+                final_report_file.write("{0}\n".format(report))
 
-                final_report_file.close()
+            final_report_file.close()
         else:
             self.exit_with_error_msg("connecting_script, sub_report_parser(): sub_report_dir {0} does not "
                                      "exist! Exiting".format(sub_report_dir))

@@ -54,7 +54,7 @@ class RecognitionModule(object):
         image_name = os.path.split(self.input_filepath)[1].split(".")[0]
         report_path = os.path.join(self.report_location, image_name + "_report.txt")
         inter_report_file = open(report_path, "w+")
-        inter_report_file.write("Name: {0}\n".format(image_name))
+        inter_report_file.write("name: {0}\n".format(image_name))
 
         if self.graph:
             t = self.read_tensor_from_image_file(
