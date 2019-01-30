@@ -101,7 +101,7 @@ class UnifiedRecognitionModule(object):
                 if os.path.exists(individual_photo_report_filepath):
                     self.wipe_directory(individual_photo_report_filepath)
                 else:
-                    os.mkdir(individual_photo_report_filepath)
+                    os.makedirs(individual_photo_report_filepath)
                 self.recognition_module.report_location = individual_photo_report_filepath
 
                 # run recognition on all sub-images
@@ -111,7 +111,7 @@ class UnifiedRecognitionModule(object):
                 # parse the resulting sub-reports into one single report for the image.
                 self.sub_report_parser(individual_photo_report_filepath)
                 # wipe the sub-image directory to make room for the next set.
-                self.wipe_directory(self.cropped_subcomponent_dir_filepath)
+                # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
 
     def set_args(self):
         """
