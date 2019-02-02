@@ -81,7 +81,9 @@ class UnifiedRecognitionModule(object):
         self.recognition_module.setup_module(recognition_args)
 
         if self.is_input_dir:
-            input_photos = glob.glob(self.input_filepath)
+            # Photos must be in a specific layout, one directory down from input path to allow for classification and
+            # general sorting. Ex: "photo_backlog/test/image.jpg"
+            input_photos = glob.glob(os.path.join(self.input_filepath, "**", "*.jpg"), recursive=True)
             # Go over all photos that must be checked
             for photo_path in input_photos:
                 # Breakdown module needs to be run for every photo with different parameters.
