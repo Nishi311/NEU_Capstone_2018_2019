@@ -78,6 +78,7 @@ class RecognitionModule(object):
             labels = self.load_labels(self.label_file)
 
             for i in top_k:
+                print(image_name)
                 print(labels[i], results[i])
                 inter_report_file.write("{0}: {1}\n".format(labels[i], results[i]))
 

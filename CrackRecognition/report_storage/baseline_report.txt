@@ -1,0 +1,9 @@
+Report Time: 2019-02-02 17:21:23.738010
+Accuracy Rating: 0.7340425531914894
+Recall Rating: 0.45454545454545453
+Precision Rating 0.9523809523809523
+
+Num True Pos: 40
+Num True Neg: 98
+Num False Pos: 2
+Num False Neg: 48

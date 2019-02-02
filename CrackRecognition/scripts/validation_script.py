@@ -15,7 +15,7 @@ class ValidationModule(object):
     CLASS_REPORT_NAME_STRING = "Name:"
 
     FINAL_REPORT_LOCATION = os.path.join("..", "output", "classification_stats")
-    FINAL_REPORT_NAME = "training_report.txt"
+    FINAL_REPORT_NAME = "baseline_report_verbose.txt"
 
     def __init__(self):
         self.baseline_location = ""
@@ -39,6 +39,8 @@ class ValidationModule(object):
         self.precision_percentage = 0
         self.accuracy_percentage = 0
 
+        self.verbose_report = False
+
     def run_module(self):
 
         args = self.set_args()
@@ -50,8 +52,8 @@ class ValidationModule(object):
         self.generate_report()
 
     def set_args(self):
-        validation_parser = argparse.ArgumentParser(description='Runs reports analysis, generating metrics on recognition'
-                                                            'success and failure.')
+        validation_parser = argparse.ArgumentParser(description='Runs reports analysis, generating metrics on '
+                                                                'recognition success and failure.')
         validation_parser.add_argument('-b', '--baselinePath', type=str, required=True,
                                        help='[REQUIRED] The absolute / relative path to where the baseline photos'
                                             'are stored')
@@ -62,6 +64,9 @@ class ValidationModule(object):
                                             'is crack-positive. By default the ratio is 0.5 for pos classification')
         validation_parser.add_argument('-e', '--extensionType', type=str,
                                        help='The extension type of the photos. By default is ".jpg"')
+        validation_parser.add_argument('-v', '--verbose', action='store_true',
+                                       help='If set, will output the names of all photos classified under their '
+                                            'respective tags (true pos, true neg, false pos, false neg')
         return validation_parser.parse_args()
 
     def parse_args(self, args):
@@ -78,6 +83,8 @@ class ValidationModule(object):
                 self.sub_image_detection_threshold = args.posThreshold
             if args.extensionType:
                 self.image_type = args.extensionType
+            if args.verbose:
+                self.verbose_report = True
 
     def gather_base_list(self):
         # Need to go one level down for actual list of file paths.
@@ -86,11 +93,11 @@ class ValidationModule(object):
         temp_neg_list = set()
         temp_pos_list = set()
 
-        for dir in baseline_dir_path_list:
-            if self.POSITIVE_STRING in dir:
-                temp_pos_list = set(glob.glob(dir))
-            elif self.NEGATIVE_STRING in dir:
-                temp_neg_list = set(glob.glob(dir))
+        for photo_path in baseline_dir_path_list:
+            if self.POSITIVE_STRING in photo_path:
+                temp_pos_list.add(photo_path)
+            elif self.NEGATIVE_STRING in photo_path:
+                temp_neg_list.add(photo_path)
 
         # Strip away all paths and extension types and leave bare file name for pos / neg list.
         for photo_name in temp_pos_list:
@@ -159,13 +166,19 @@ class ValidationModule(object):
                                                                      self.recall_percentage, self.precision_percentage)
         final_report.write(calculation_results_string)
 
-        raw_results_string = "Num True Pos: {0}\nTrue Pos List:\n{1}\n\nNum True Neg: {2}\nTrue Neg List: \n{3}\n\n" \
-                             "Num False Pos: {4}\nFalse Pos List:\n{5}\n\nNum False Neg: {6}\nFalse Neg List:\n{7}\n\n"\
-                             .format(len(self.true_pos_list), self.true_pos_list,
-                                     len(self.true_neg_list), self.true_neg_list,
-                                     len(self.false_pos_list), self.false_pos_list,
-                                     len(self.false_neg_list), self.false_neg_list)
-        final_report.write(raw_results_string)
+        if self.verbose_report:
+            raw_results_string = "Num True Pos: {0}\nTrue Pos List:\n{1}\n\nNum True Neg: {2}\nTrue Neg List: \n{3}\n\n" \
+                                 "Num False Pos: {4}\nFalse Pos List:\n{5}\n\nNum False Neg: {6}\nFalse Neg List:\n{7}\n\n"\
+                                 .format(len(self.true_pos_list), self.true_pos_list,
+                                         len(self.true_neg_list), self.true_neg_list,
+                                         len(self.false_pos_list), self.false_pos_list,
+                                         len(self.false_neg_list), self.false_neg_list)
+            final_report.write(raw_results_string)
+        else:
+            raw_results_string = "Num True Pos: {0}\nNum True Neg: {1}\nNum False Pos: {2}\nNum False Neg: {3}\n" \
+                .format(len(self.true_pos_list), len(self.true_neg_list), len(self.false_pos_list),
+                        len(self.false_neg_list))
+            final_report.write(raw_results_string)
 
         final_report.close()
 
@@ -182,7 +195,3 @@ class ValidationModule(object):
 if __name__ == "__main__":
     validation_module = ValidationModule()
     validation_module.run_module()
-
-
-
-
