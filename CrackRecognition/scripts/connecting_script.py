@@ -17,10 +17,10 @@ class UnifiedRecognitionModule(object):
     DEFAULT_HEIGHT = 227
 
     # Default graph that will be used to detect cracks.
-    DEFAULT_GRAPH_FILEPATH = os.path.join("..", "retrained_model", "crack_detection_graph.pb")
+    DEFAULT_GRAPH_FILEPATH = os.path.join("..", "retrained_model", "model_2_graph.pb")
 
     # Default label set that will be used to label detection results.
-    DEFAULT_LABEL_FILEPATH = os.path.join("..", "retrained_model", "crack_detection_labels.txt")
+    DEFAULT_LABEL_FILEPATH = os.path.join("..", "retrained_model", "model_2_labels.txt")
 
     # location of the output directory relative to this script
     OUTPUT_PATH = os.path.join("..", "output")
