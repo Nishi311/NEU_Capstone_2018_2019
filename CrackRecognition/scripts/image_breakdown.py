@@ -175,19 +175,18 @@ class ImageBreakdownModule(object):
 
     # Begin non-static functions
 
-    def setup_module(self, args=""):
-        if not args:
-            args = self.set_args()
-        self.parse_args(args)
-
-    def run_module(self):
+    def run_module(self, args=""):
         """
         Small function that controls the overall workflow of the class. Sets and parses the arguments, handles the
         creation of new output directories as necessary, runs the breakdown then, finally, cleans up.
         :return:
         """
+        if not args:
+            args = self.set_args()
+        self.parse_args(args)
 
         # Remove previous version of the output directory, if it exists.
+        self.cropped_subcomponent_dir = os.path.join(self.cropped_subcomponent_dir, self.full_image_name)
         if os.path.exists(self.cropped_subcomponent_dir):
             shutil.rmtree(self.cropped_subcomponent_dir)
         # Make a new output dir.
@@ -378,5 +377,4 @@ class ImageBreakdownModule(object):
 
 if __name__ == '__main__':
     image_breakdown = ImageBreakdownModule()
-    image_breakdown.setup_module()
     image_breakdown.run_module()

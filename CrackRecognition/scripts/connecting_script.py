@@ -47,7 +47,7 @@ class UnifiedRecognitionModule(object):
         self.cropped_px_width = self.DEFAULT_WIDTH
         self.cropped_px_height = self.DEFAULT_HEIGHT
         self.ignore_leftover_pixels = True
-        # self.skip_breakdown = False
+        self.skip_breakdown = False
 
         # Variables related to image recognition
         self.graph_filepath = self.DEFAULT_GRAPH_FILEPATH
@@ -86,17 +86,6 @@ class UnifiedRecognitionModule(object):
             input_photos = glob.glob(os.path.join(self.input_filepath, "**", "*.jpg"), recursive=True)
             # Go over all photos that must be checked
             for photo_path in input_photos:
-                # Breakdown module needs to be run for every photo with different parameters.
-                # Update args with every photo.
-                breakdown_args = self.setup_image_breakdown_arguments(photo_path)
-                self.image_breakdown_module.setup_module(breakdown_args)
-
-                # Break down the image into sub-images for recognition
-                self.image_breakdown_module.run_module()
-
-                # Get a list of the sub-images.
-                broken_down_images = glob.glob(os.path.join(self.cropped_subcomponent_dir_filepath, "*"))
-
                 # Set up the report output directory for this photo.
                 individual_photo_report_filepath = os.path.join(self.DEFAULT_INTER_REPORT_FILEPATH,
                                                                 os.path.split(photo_path)[1].split(".")[0])
@@ -106,14 +95,27 @@ class UnifiedRecognitionModule(object):
                     os.makedirs(individual_photo_report_filepath)
                 self.recognition_module.report_location = individual_photo_report_filepath
 
-                # run recognition on all sub-images
-                for sub_photo_path in broken_down_images:
-                    self.recognition_module.input_filepath = sub_photo_path
+                if not self.skip_breakdown:
+                    # Breakdown module needs to be run for every photo with different parameters.
+                    # Update args with every photo.
+                    breakdown_args = self.setup_image_breakdown_arguments(photo_path)
+
+                    # Break down the image into sub-images for recognition
+                    self.image_breakdown_module.run_module(breakdown_args)
+
+                    # Get a list of the sub-images.
+                    broken_down_images = glob.glob(os.path.join(self.image_breakdown_module.cropped_subcomponent_dir, "*"))
+                    # run recognition on all sub-images
+                    for sub_photo_path in broken_down_images:
+                        self.recognition_module.input_filepath = sub_photo_path
+                        self.recognition_module.run_module()
+                    # parse the resulting sub-reports into one single report for the image.
+                    self.sub_report_parser(individual_photo_report_filepath)
+                    # wipe the sub-image directory to make room for the next set.
+                    # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
+                else:
+                    self.recognition_module.input_filepath = photo_path
                     self.recognition_module.run_module()
-                # parse the resulting sub-reports into one single report for the image.
-                self.sub_report_parser(individual_photo_report_filepath)
-                # wipe the sub-image directory to make room for the next set.
-                # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
 
     def set_args(self):
         """
@@ -137,15 +139,15 @@ class UnifiedRecognitionModule(object):
                                             'images will be stored. Or a relative path from where this script is '
                                             'called from. If the directory already exists, it will be overwritten. '
                                             'If it does not exist, it will be made.')
-        connection_parser.add_argument('-w', '--SubImageWidth', type=int, help='How many pixels wide each sub-image '
+        connection_parser.add_argument('-w', '--subImageWidth', type=int, help='How many pixels wide each sub-image '
                                                                                'should be. Defaults to 227px')
-        connection_parser.add_argument('-t', '--SubImageHeight', type=int,  help='How many pixels tall each sub-image '
+        connection_parser.add_argument('-t', '--subImageHeight', type=int,  help='How many pixels tall each sub-image '
                                                                                  'should be. Defaults to 227px')
 
-        # connection_parser.add_argument('-s', "--SkipBreakdown", action="store_true",
-        #                                 help="Skip the breakdown process and attempt to run recognition on an exiting " \
-        #                                      "image. WILL ASSUME THAT THE IMAGE IS OF EITHER DEFAULT DIMENSIONS OR OF " \
-        #                                      "SPECIFIED SUB-IMAGE WIDTH/HEIGHT.")
+        connection_parser.add_argument('-s', "--skipBreakdown", action="store_true",
+                                        help="Skip the breakdown process and attempt to run recognition on an exiting " \
+                                             "image. WILL ASSUME THAT THE IMAGE IS OF EITHER DEFAULT DIMENSIONS OR OF " \
+                                             "SPECIFIED SUB-IMAGE WIDTH/HEIGHT.")
 
         connection_parser.add_argument('-p', '--ignoreLeftoverPixels', action='store_true',
                                        help='If the image width or height is not cleanly divisible by the '
@@ -180,14 +182,14 @@ class UnifiedRecognitionModule(object):
                     self.input_filepath = os.path.join(args.inputPath, "*")
             if args.outputDir:
                 self.cropped_subcomponent_dir_filepath = args.outputDir
-            if args.SubImageWidth:
+            if args.subImageWidth:
                 self.cropped_px_width = args.subImageWidth
-            if args.SubImageHeight:
+            if args.subImageHeight:
                 self.cropped_px_height = args.subImageHeight
             if args.ignoreLeftoverPixels:
                 self.ignore_leftover_pixels = True
-            # if args.SkipBreakdown:
-            #     self.skip_breakdown = True
+            if args.skipBreakdown:
+                self.skip_breakdown = True
             if args.recognitionGraphPath:
                 self.graph_filepath = args.recognitionGraph
             if args.recognitionLabelsPath:
