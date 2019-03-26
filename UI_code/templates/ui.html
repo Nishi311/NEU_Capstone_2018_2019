@@ -1,0 +1,326 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="static/js/control_block.js"></script>
+        <script src="static/js/quadrant_control.js"></script>
+        <style>
+        html {
+          background: url("https://cosmos-magazine.imgix.net/file/spina/photo/4895/c68_whyisitso_1.jpg?fit=clip&w=835") no-repeat center center fixed;
+          -webkit-background-size: cover;
+          -moz-background-size: cover;
+          -o-background-size: cover;
+          background-size: cover;
+        }
+        body
+        {
+            min-width:1562px;
+        }
+        div.banner
+        {
+            display:inline-block;
+            float:left;
+            width:9%;
+            height:535px;
+            border-style:solid;
+            border-color:black;
+            background-image: url("https://i0.wp.com/web.northeastern.edu/numa/wp-content/uploads/1000px-Northeastern-seal.svg_.png?ssl=1");
+            background-repeat:no-repeat;
+            background-color:#DE2C17;
+            background-position:top;
+            background-size: 110px 110px;
+            border-right: 0;
+        }
+        div.image_database
+        {
+            display:inline-block;
+            float:left;
+            width:44%;
+            height:400px;
+            background-color: lightblue;
+            border-style:inset;
+            border-color:black;
+            border-right: 0;
+        }
+        div.image_table
+        {
+            display:inline-block;
+            float:left;
+            width:47%;
+            height:97%;
+            padding: 1px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            width: 80% !important;
+        }
+
+        tr:hover {background-color:#f5f5f5;}
+
+        div.display_table{
+            display: inline-block;
+            vertical-align: top;
+            overflow:auto;
+            height: 70%;
+            padding: 4px;
+            margin-left:0px;
+        }
+        div.current_image
+        {
+            display:inline-block;
+            float:left;
+            width:47%;
+            height:100%;
+        }
+        div.image_view
+        {
+            display:inline-block;
+            justify-content: center;
+            border-style:inset;
+            border-color:black;
+            min-width:200px;
+            min-height:200px;
+            max-width:75%;
+            max-height:75%;
+
+        }
+        img.quick_image {
+            display:inline-block;
+            padding: 10px;
+            max-width:60%;
+            max-height:60%;
+        }
+        div.building_display
+        {
+            display:inline-block;
+            float:left;
+            width:44%;
+            height:400px;
+            background-color: lightblue;
+            border-style:inset;
+            border-color:black;
+        }
+        div.building_control
+        {
+            display:inline-block;
+            float:left;
+            width:48.3%;
+            height:82%;
+        }
+        #myProgress {
+            width: 90%;
+            background-color: #ddd;
+            margin:10px
+
+
+        }
+        #myBar {
+            height: 30px;
+            background-color: #4CAF50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+        div.building_image
+        {
+            display:inline-block;
+            justify-content: center;
+            border-style:inset;
+            border-color:black;
+            min-width:200px;
+            min-height:200px;
+            max-width:60%;
+            max-height:60%;
+        }
+        img.building_image_display {
+            display:inline-block;
+            padding: 10px;
+            max-width:55%;
+            max-height:55%;
+        }
+        div.sides_number
+        {
+            display:inline-block;
+            float:left;
+            width:48.6%;
+            height:82%;
+        }
+        div.shape_display
+        {
+                display:inline-block;
+                width:98%;
+            height:70%;
+            border-style:inset;
+            border-color:black;
+            background-color: lightgrey;
+        }
+        div.control
+        {
+            width:44%;
+            background-color: lightgrey;
+            border-style:inset;
+            border-color:black;
+            float: left;
+            border-top: 0;
+        }
+
+        .btn-group button {
+            display:inline-block;
+            background-color: #4CAF50; /* Green background */
+            border: 1px solid green; /* Green border */
+            color: white; /* White text */
+            padding: 10px 24px; /* Some padding */
+            cursor: pointer; /* Pointer/hand icon */
+            float: left; /* Float the buttons side by side */
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group:after {
+            content: "";
+            clear: both;
+            display: inline-block;
+        }
+
+        .btn-group button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Add a background color on hover */
+        .btn-group button:hover {
+            background-color: #3e8e41;
+        }
+
+        .dropbtn {
+            background-color: white;
+            color: black;
+            padding: 2px;
+            margin:5px;
+            font-size: 10px;
+            border: outline;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {background-color: lightgrey}
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: lightgrey;
+        }
+        </style>
+
+        <title> Project CDUD: Crack Detection Using Drones</title>
+    </head>
+
+    <body>
+        <center><h1><font size="7"> Project CDUD: Crack Detection Using Drones </font></h1></center>
+        <p style="border-bottom: 6px solid black;">
+            <input type="button" value="Close Window" id="close_window"/>
+        </p>
+        <br>
+        <div class="banner">
+        </div>
+        <div class="image_database">
+            <center><h2>Quadrant Currently Under Examination</h2></center>
+            <div class="image_table">
+                <center>
+                    <div class="dropdown">
+                        <button class="dropbtn">Choose New Quadrant</button>
+                        <div class="dropdown-content">
+                        </div>
+                    </div>
+                </center>
+                <div class="display_table">
+                    <center>
+                        <font size="2.5">
+                            <div class="table_of_images">
+                            </div>
+                        </font>
+                    </center>
+                </div>
+            </div>
+            <div class="current_image">
+                <br>
+                <br>
+                <br>
+                <center><font size="5">Quick Look</font></center>
+                <center>
+                    <div class="image_view">
+                        <center><img class="quick_image" src="https://www.boma.org/images/homePage/windyPoint.png" alt="test"></center>
+                    </div>
+                </center>
+            </div>
+        </div>
+        <div class="building_display">
+            <center><h2>Building Currently Under Examination</h2></center>
+            <div class="building_control">
+                    <center>
+                        Building selected:
+                        <input type="text" name="firstname" value="Prudential">
+                        <input type="submit" value="Submit">
+                    </center>
+                    <div id="myProgress">
+                        <div style="width: 90%;" id="myBar">90% Complete</div>
+                    </div>
+                        <center>
+                    <div class="building_image">
+                        <center><img class="building_image_display" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/04_Prudential_Tower.jpg/1200px-04_Prudential_Tower.jpg" alt="test"></center>
+                        </div>
+                    </center>
+                </div>
+            <div class="sides_number">
+                <center><font size="4">Building Outline:</font></center>
+                <div class="shape_display">
+                        <center><img style="max-width:100%;max-height=100%;" src="https://i.stack.imgur.com/WHRXE.png" alt="test"></center>
+                </div>
+                <button onclick="NA';">Display Building Outline</button>
+                <button onclick="NA';">Toggle GPS Corner points</button>
+                <button onclick="NA';">Toggle Waypoint Overlay</button>
+                <button onclick="NA';">Modify Waypoint Path</button>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="control">
+            <div class="drone_control">
+                <b>Drone Control Menu:</b>
+                <div class="btn-group">
+                    <button id="building_sweep">Begin Building Sweep</button>
+                    <button onclick="location.href='http://127.0.0.1:5000/open_drone_manual';">Assume Manual Drone Control</button>
+                    <button onclick="location.href='http://127.0.0.1:5000/open_camera_manual';">Assume Manual Camera Control</button>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div class="data_manipulation" style="">
+                <b>Data Storage Menu:</b>
+                <div class="btn-group">
+                    <button id="compress_data">Compress Current Data</button>
+                    <button onclick="location.href='http://127.0.0.1:5000/open_camera_manual';">Display Old Data</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

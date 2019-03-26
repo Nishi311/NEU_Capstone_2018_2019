@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="static/js/camera_control.js"></script>
+        <style>
+            html {
+              background: url("https://cosmos-magazine.imgix.net/file/spina/photo/4895/c68_whyisitso_1.jpg?fit=clip&w=835") no-repeat center center fixed;
+              -webkit-background-size: cover;
+              -moz-background-size: cover;
+              -o-background-size: cover;
+              background-size: cover;
+            }
+            body
+            {
+                min-width:980px;
+            }
+            polygon
+            {
+                fill:green;
+                stroke:black;
+                stroke-width:1
+            }
+            a:hover polygon  {
+                                fill: red;
+                        }
+        </style>
+
+        <title> Project CDUD: Crack Detection Using Drones</title>
+    </head>
+
+    <body>
+    <center><h1><font size="7"> Manual Control For Camera</font></h1></center>
+      <p style="border-bottom: 6px solid black;">
+        <button onclick="location.href='http://127.0.0.1:5000/';">Return To Main Menu</button>
+      </p>
+    <center>
+        <br>
+        <br>
+        <br>
+        <br>
+        <div style="display:inline-block;">
+            <svg height="100" width="100">
+                <a id="f_control">
+                    <polygon points="0,100 50,0 100,100"/>
+                        <text x="50" y="70" fill="#FFFFFF" text-anchor="middle" alignment-baseline="middle">
+                         Forward
+                        </text>
+                </a>
+                Sorry, your browser does not support inline SVG.
+            </svg>
+
+            <br>
+            <svg height="100" width="100">
+                <a id="picture">
+                    <polygon points="0,0 100,0 100,100, 0,100"/>
+                    <text x="50" y="50" fill="#FFFFFF" text-anchor="middle" alignment-baseline="middle">
+                        Take Picture
+                    </text>
+                </a>
+                Sorry, your browser does not support inline SVG.
+            </svg>
+            <br>
+            <svg height="100" width="100">
+                <a id="b_control">
+                    <polygon points="0,0 100,0 50,100" />
+                    <text x="50" y="20" fill="#FFFFFF" text-anchor="middle" alignment-baseline="middle">
+                        Backwards
+                    </text>
+                </a>
+                Sorry, your browser does not support inline SVG.
+            </svg>
+        </div>
+        <div style="display:inline-block;border-style:inset; height:320px;width:300px;background-color:lightgrey;">
+                <center><img id="image_taken" style="float:middle;display:inline-block;max-width:300px;max-height:320px;" src="https://www.boma.org/images/homePage/windyPoint.png" alt="test"></center>
+        </div>
+    </center>
+    </body>
+</html>
