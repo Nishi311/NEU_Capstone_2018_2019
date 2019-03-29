@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 
-import threading
-
 import webbrowser
 import time
 import os

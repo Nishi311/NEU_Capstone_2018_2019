@@ -66,7 +66,6 @@ class UnifiedRecognitionModule(object):
 
         self.graph_labels_filepath = self.DEFAULT_LABEL_FILEPATH
         self.cropped_image_filepath = ""
-        self.report_path = ""
 
         # self-contained modules for use in breaking down then recognizing images.
         self.image_breakdown_module = ImageBreakdownModule()
@@ -101,7 +100,7 @@ class UnifiedRecognitionModule(object):
             # Go over all photos that must be checked
             for photo_path in input_photos:
                 # Set up the report output directory for this photo.
-                individual_photo_report_filepath = os.path.join( self.final_reports_dir,
+                individual_photo_report_filepath = os.path.join(self.final_reports_dir,
                                                                 os.path.split(photo_path)[1].split(".")[0])
                 if os.path.exists(individual_photo_report_filepath):
                     self.wipe_directory(individual_photo_report_filepath)
@@ -115,8 +114,15 @@ class UnifiedRecognitionModule(object):
                     self.recognition_module.input_filepath = photo_path
                     self.recognition_module.run_module()
         else:
-            self.recognition_module.input_filepath = self.input_filepath
-            self.recognition_module.run_module()
+            individual_photo_report_filepath = os.path.join(self.final_reports_dir,
+                                                            os.path.split(self.input_filepath)[1].split(".")[0])
+            if not self.skip_breakdown:
+                self.breakdown_and_recognize_image(self.input_filepath, individual_photo_report_filepath)
+            else:
+                self.recognition_module.input_filepath = self.input_filepat
+                self.recognition_module.report_location = self.report_path
+                self.recognition_module.run_module()
+
 
     def set_args(self):
         """

@@ -7,6 +7,7 @@ import time
 import os
 import glob
 import shutil
+# TODO: Sort out report paths between detection thread / connecting script / recognition script
 
 
 class RecognitionThreadWrapper(object):
@@ -14,12 +15,18 @@ class RecognitionThreadWrapper(object):
     GENERAL_IO_RELATIVE_DIR = os.path.join("..", "static", "generalIO")
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+    GENERAL_IO_ABS_PATH = os.path.join(THIS_FILE_PATH, GENERAL_IO_RELATIVE_DIR)
 
     def __init__(self):
-        self.output_dir = os.path.join(self.GENERAL_IO_RELATIVE_DIR, "output")
-        self.photo_queue_dir = os.path.join(self.GENERAL_IO_RELATIVE_DIR, "queued_photos")
+        self.photo_queue_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "queued_photos")
+        self.intermediary_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "intermediary")
+        self.image_breakdown_dir = os.path.join(self.intermediary_dir, "image_breakdown")
+        self.breakdown_report_dir = os.path.join(self.intermediary_dir, "breakdown_reports")
+
+
+        self.output_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "output")
         self.photo_output_dir = os.path.join(self.output_dir, "finished_photos")
-        self.result_output_dir = os.path.join(self.output_dir, "finished_reports")
+        self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -35,11 +42,9 @@ class RecognitionThreadWrapper(object):
 
     def unified_module_setup(self):
 
-        self.unified_module.cropped_subcomponent_dir_filepath = os.path.join(self.THIS_FILE_PATH,
-                                                                                 self.GENERAL_IO_RELATIVE_DIR,
-                                                                                 "image_breakdown")
-        self.unified_module.output_dir = self.output_dir
-        self.unified_module.final_reports_dir = self.result_output_dir
+        self.unified_module.cropped_subcomponent_dir_filepath = self.image_breakdown_dir
+        self.unified_module.final_reports_dir = self.final_report_output_dir
+        self.unified_module.final_reports_dir = self.final_report_output_dir
 
         if not os.path.exists(self.unified_module.cropped_subcomponent_dir_filepath):
             os.makedirs(self.unified_module.cropped_subcomponent_dir_filepath)
@@ -60,8 +65,8 @@ class RecognitionThreadWrapper(object):
         if not os.path.exists(self.photo_output_dir):
             os.makedirs(self.photo_output_dir)
 
-        if not os.path.exists(self.result_output_dir):
-            os.makedirs(self.result_output_dir)
+        if not os.path.exists(self.final_report_output_dir):
+            os.makedirs(self.final_report_output_dir)
 
         thread = threading.Thread(target=self.continous_detection(), args=())
         thread.daemon = True
@@ -70,7 +75,6 @@ class RecognitionThreadWrapper(object):
     def continous_detection(self):
 
         while True:
-            time.sleep(1)
             self.queue_of_photos += self.check_for_new_photos()
 
             if self.queue_of_photos:
@@ -80,6 +84,9 @@ class RecognitionThreadWrapper(object):
                 self.unified_module.input_filepath = current_photo
                 self.unified_module.run_module()
                 shutil.move(current_photo, self.photo_output_dir)
+            else:
+                print("Photo Queue Empty: Standing by for additional images\n")
+                time.sleep(1)
 
     def check_for_new_photos(self):
 
