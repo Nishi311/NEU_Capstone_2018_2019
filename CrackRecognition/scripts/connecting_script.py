@@ -5,11 +5,16 @@ import shutil
 
 from types import SimpleNamespace
 
-from image_breakdown import ImageBreakdownModule
-from recognition_script import RecognitionModule
+from CrackRecognition.scripts.image_breakdown import ImageBreakdownModule
+from CrackRecognition.scripts.recognition_script import RecognitionModule
 
 
 class UnifiedRecognitionModule(object):
+
+    # Absolute path to the directory containing this file. Allows relative paths to be preserved
+    # even when calling from another directory
+    THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+
     # Default width of an image sub-component as measured in pixels
     DEFAULT_WIDTH = 227
 
@@ -17,13 +22,13 @@ class UnifiedRecognitionModule(object):
     DEFAULT_HEIGHT = 227
 
     # Default graph that will be used to detect cracks.
-    DEFAULT_GRAPH_FILEPATH = os.path.join("..", "retrained_model", "model_3_graph.pb")
+    DEFAULT_GRAPH_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "retrained_model", "model_2_graph.pb")
 
     # Default label set that will be used to label detection results.
-    DEFAULT_LABEL_FILEPATH = os.path.join("..", "retrained_model", "model_3_labels.txt")
+    DEFAULT_LABEL_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "retrained_model", "model_2_labels.txt")
 
     # location of the output directory relative to this script
-    OUTPUT_PATH = os.path.join("..", "output")
+    OUTPUT_PATH = os.path.join(THIS_FILE_PATH, "..", "output")
 
     # Default output location for the final recognition report.
     DEFAULT_FINAL_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "recognition_report.txt")
@@ -40,6 +45,7 @@ class UnifiedRecognitionModule(object):
     def __init__(self):
         # Very important control variable governing whether or an entire directory or a single file is being analysed.
         self.is_input_dir = True
+        self.skip_parse_args = False
 
         # Variables related to image breakdown
         self.input_filepath = ""
@@ -49,8 +55,15 @@ class UnifiedRecognitionModule(object):
         self.ignore_leftover_pixels = True
         self.skip_breakdown = False
 
+        # output variables
+        self.pre_wipe_output_dir = True
+        self.final_reports_dir = self.DEFAULT_INTER_REPORT_FILEPATH
+        self.output_dir = self.OUTPUT_PATH
+
         # Variables related to image recognition
+        self.percentage_threshold = 0.3
         self.graph_filepath = self.DEFAULT_GRAPH_FILEPATH
+
         self.graph_labels_filepath = self.DEFAULT_LABEL_FILEPATH
         self.cropped_image_filepath = ""
         self.report_path = ""
@@ -65,15 +78,16 @@ class UnifiedRecognitionModule(object):
         and recognition.
         """
         # set args and local parameters
-        args = self.set_args()
-        self.parse_args(args)
+        if not self.skip_parse_args:
+            args = self.set_args()
+            self.parse_args(args)
 
         # wipe output directory (if populated)
-        if os.listdir(self.OUTPUT_PATH):
-            self.wipe_directory(self.OUTPUT_PATH)
+        if os.listdir(self.output_dir) and self.pre_wipe_output_dir:
+            self.wipe_directory(self.output_dir)
         # create the intermediary report directory if it doesn't alr.
-        if not os.path.exists(self.DEFAULT_INTER_REPORT_FILEPATH):
-            os.mkdir(self.DEFAULT_INTER_REPORT_FILEPATH)
+        if not os.path.exists(self.final_reports_dir):
+            os.mkdir(self.final_reports_dir)
 
         # Recognition module will only use one graph throughout its lifecycle.
         # set those parameters here. Will update individual files as needed.
@@ -87,7 +101,7 @@ class UnifiedRecognitionModule(object):
             # Go over all photos that must be checked
             for photo_path in input_photos:
                 # Set up the report output directory for this photo.
-                individual_photo_report_filepath = os.path.join(self.DEFAULT_INTER_REPORT_FILEPATH,
+                individual_photo_report_filepath = os.path.join( self.final_reports_dir,
                                                                 os.path.split(photo_path)[1].split(".")[0])
                 if os.path.exists(individual_photo_report_filepath):
                     self.wipe_directory(individual_photo_report_filepath)
@@ -96,26 +110,13 @@ class UnifiedRecognitionModule(object):
                 self.recognition_module.report_location = individual_photo_report_filepath
 
                 if not self.skip_breakdown:
-                    # Breakdown module needs to be run for every photo with different parameters.
-                    # Update args with every photo.
-                    breakdown_args = self.setup_image_breakdown_arguments(photo_path)
-
-                    # Break down the image into sub-images for recognition
-                    self.image_breakdown_module.run_module(breakdown_args)
-
-                    # Get a list of the sub-images.
-                    broken_down_images = glob.glob(os.path.join(self.image_breakdown_module.cropped_subcomponent_dir, "*"))
-                    # run recognition on all sub-images
-                    for sub_photo_path in broken_down_images:
-                        self.recognition_module.input_filepath = sub_photo_path
-                        self.recognition_module.run_module()
-                    # parse the resulting sub-reports into one single report for the image.
-                    self.sub_report_parser(individual_photo_report_filepath)
-                    # wipe the sub-image directory to make room for the next set.
-                    # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
+                    self.breakdown_and_recognize_image(photo_path, individual_photo_report_filepath)
                 else:
                     self.recognition_module.input_filepath = photo_path
                     self.recognition_module.run_module()
+        else:
+            self.recognition_module.input_filepath = self.input_filepath
+            self.recognition_module.run_module()
 
     def set_args(self):
         """
@@ -165,6 +166,10 @@ class UnifiedRecognitionModule(object):
                                        help="An absolute path to location where the summary report shall be output. "
                                             "Can also be relative path from where script is executed.")
 
+        connection_parser.add_argument('--percentageThreshold', type=float,
+                                       help="The threshold of confidence at which an image should be considered to have"
+                                            "a crack")
+
         return connection_parser.parse_args()
 
     def parse_args(self, args):
@@ -194,8 +199,29 @@ class UnifiedRecognitionModule(object):
                 self.graph_filepath = args.recognitionGraph
             if args.recognitionLabelsPath:
                 self.graph_labels_filepath = args.recognitionLabels
+            if args.percentageThreshold:
+                self.percentage_threshold = args.percentageThreshold
         else:
             self.exit_with_error_msg("No arguments given!")
+
+    def breakdown_and_recognize_image(self, photo_path, final_report_path):
+        # Breakdown module needs to be run for every photo with different parameters.
+        # Update args with every photo.
+        breakdown_args = self.setup_image_breakdown_arguments(photo_path)
+
+        # Break down the image into sub-images for recognition
+        self.image_breakdown_module.run_module(breakdown_args)
+
+        # Get a list of the sub-images.
+        broken_down_images = glob.glob(os.path.join(self.image_breakdown_module.cropped_subcomponent_dir, "*"))
+        # run recognition on all sub-images
+        for sub_photo_path in broken_down_images:
+            self.recognition_module.input_filepath = sub_photo_path
+            self.recognition_module.run_module()
+        # parse the resulting sub-reports into one single report for the image.
+        self.sub_report_parser(final_report_path)
+        # wipe the sub-image directory to make room for the next set.
+        # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
 
     def setup_image_breakdown_arguments(self, input_filepath):
         """
@@ -280,7 +306,7 @@ class UnifiedRecognitionModule(object):
                     if "name:" in line:
                         sub_report_name = line.split("name:")[1]
 
-                if neg_value > pos_value:
+                if pos_value < self.percentage_threshold:
                     negative_report_list.append(sub_report_name)
                 else:
                     positive_report_list.append(sub_report_name)
@@ -322,7 +348,7 @@ class UnifiedRecognitionModule(object):
         print(error_message)
         exit(1)
 
-
-if __name__ == "__main__":
-    connecting_module = UnifiedRecognitionModule()
-    connecting_module.run_module()
+#
+# if __name__ == "__main__":
+#     connecting_module = UnifiedRecognitionModule()
+#     connecting_module.run_module()

@@ -75,11 +75,11 @@ class ValidationModule(object):
                 self.baseline_location = args.baselinePath
             else:
                 self.exit_with_error_msg("MUST provide baseline path")
-            if args.reportsPath:
+            if args.reportsPath :
                 self.reports_location = args.reportsPath
             else:
                 self.exit_with_error_msg("MUST provide report path")
-            if args.posThreshold:
+            if float(args.posThreshold) >= 0:
                 self.sub_image_detection_threshold = args.posThreshold
             if args.extensionType:
                 self.image_type = args.extensionType
@@ -131,7 +131,7 @@ class ValidationModule(object):
                 if self.CLASS_REPORT_POS_STRING in line:
                     num_pos_sub_image = int(line.split(self.CLASS_REPORT_POS_STRING)[1])
 
-            if (num_pos_sub_image / (num_pos_sub_image+num_neg_sub_image)) >= self.sub_image_detection_threshold:
+            if (num_pos_sub_image / (num_pos_sub_image+num_neg_sub_image)) > self.sub_image_detection_threshold:
                 self.classified_pos_list.append(report_name)
             else:
                 self.classified_neg_list.append(report_name)

@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 
+import threading
+
 import webbrowser
 import time
 import os
@@ -98,6 +100,7 @@ def select_new_quadrant():
     return jsonify("nothing changed")
 
 # Gets all images stored for a give quadrant
+# TODO: Grab image results, make new JSON {image_name, crack / no crack}
 @app.route('/get_images', methods=['GET', 'POST'])
 def get_images():
     global quadrant
@@ -114,7 +117,8 @@ def get_images():
 
 # Opens the pogram to the main menu.
 def main():
-    webbrowser.get('chrome').open("http://127.0.0.1:5000/")
+    webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
+    #TODO: asycnronously run algorithm from here
     app.run(host='127.0.0.1')
 
 if __name__ == "__main__":
