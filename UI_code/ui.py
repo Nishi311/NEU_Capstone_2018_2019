@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 
+from UI_code.website_wrapper.detection_thread_wrapper import RecognitionThreadWrapper
+
+import threading
 import webbrowser
 import time
 import os
@@ -113,10 +116,13 @@ def get_images():
     files = ['/'+quadrant+'/'+f for f in files]
     return jsonify(files)
 
-# Opens the pogram to the main menu.
+
+# Opens the program to the main menu.
 def main():
+    recognition_wrapper = RecognitionThreadWrapper()
+    recognition_wrapper.run_module()
+
     webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
-    #TODO: asycnronously run algorithm from here
     app.run(host='127.0.0.1')
 
 if __name__ == "__main__":

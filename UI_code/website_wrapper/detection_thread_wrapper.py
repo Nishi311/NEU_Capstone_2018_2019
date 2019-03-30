@@ -73,7 +73,7 @@ class RecognitionThreadWrapper(object):
             os.makedirs(self.final_report_output_dir)
 
         # Begin the main loop of check, recognize, report.
-        thread = threading.Thread(target=self.continous_detection(), args=())
+        thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
         thread.daemon = True
         thread.start()
 
