@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 
-from UI_code.website_wrapper.detection_thread_wrapper import RecognitionThreadWrapper
+from UI_code.helper_classes.detection_thread_wrapper import RecognitionThreadWrapper
 
 import threading
 import webbrowser
@@ -124,6 +124,7 @@ def main():
 
     webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
     app.run(host='127.0.0.1')
+
 
 if __name__ == "__main__":
     main()

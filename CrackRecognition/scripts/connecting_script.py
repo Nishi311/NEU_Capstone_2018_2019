@@ -342,6 +342,12 @@ class UnifiedRecognitionModule(object):
 
             final_report_file = open(os.path.join(final_report_dir, report_name + "_final_report.txt"), "w+")
             final_report_file.write("Name: {0}\n".format(report_name))
+
+            if positive_report_list:
+                final_report_file.write("Crack Detected: Positive\n")
+            else:
+                final_report_file.write("Crack Detected: Negative\n")
+
             final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
             final_report_file.write("Neg > Pos Image reports: \n")
             for report in negative_report_list:
