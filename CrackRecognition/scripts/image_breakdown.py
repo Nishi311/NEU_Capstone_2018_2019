@@ -16,9 +16,9 @@ class ImageBreakdownModule(object):
         # Absolute path to the image that will be broken down
         self._full_image_filepath = ""
         # The extension-less name of the image file
-        self._full_image_name = ""
+        self.full_image_name = ""
         # The extension that goes with the image name
-        self._full_image_extension = ""
+        self.full_image_extension = ""
 
         # The number of pixels wide the FULL image is.
         self._full_px_width = 0
@@ -30,31 +30,14 @@ class ImageBreakdownModule(object):
         # The number of pixels tall the cropped image sub-component should be
         self._cropped_px_height = self.DEFAULT_HEIGHT
         # Absolute path to the cropped directory where the broken down images will be kept.
-        self._cropped_subcomponent_dir = ""
+        self.cropped_subcomponent_dir = ""
 
         # Control flag that will let the breakdown function ignore any left over pixels.
-        self._ignoreLeftoverPixels = False
+        self.ignoreLeftoverPixels = False
 
     # Begin ALL properties
 
     # Begin original image properties
-
-    @property
-    def full_image_name(self):
-        return self._full_image_name
-
-    @full_image_name.setter
-    def full_image_name(self, new_full_image_name):
-        self._full_image_name = new_full_image_name
-
-    @property
-    def full_image_extension(self):
-        return self._full_image_extension
-
-    @full_image_extension.setter
-    def full_image_extension(self, new_full_image_extension):
-        self._full_image_extension = new_full_image_extension
-
     @property
     def full_px_width(self):
         return self._full_px_width
@@ -88,7 +71,7 @@ class ImageBreakdownModule(object):
         if os.path.exists(new_full_image_filepath):
             self._full_image_filepath = new_full_image_filepath
             try:
-
+                # Assign original image width / height values
                 with Image.open(self.full_image_filepath) as image_object:
                     self.full_px_width, self.full_px_height = image_object.size
 
@@ -140,27 +123,7 @@ class ImageBreakdownModule(object):
             self.exit_with_error_msg("ImageBreakdown, cropped_px_height setter(): cropped width CANNOT be <= 0. "
                                      "Exiting")
 
-    @property
-    def cropped_subcomponent_dir(self):
-        return self._cropped_subcomponent_dir
-
-    @cropped_subcomponent_dir.setter
-    def cropped_subcomponent_dir(self, new_cropped_subcomponent_dir):
-        self._cropped_subcomponent_dir = new_cropped_subcomponent_dir
-
     # End sub-image properties
-
-    # Begin control properties
-
-    @property
-    def ignoreLeftoverPixels(self):
-        return self._ignoreLeftoverPixels
-
-    @ignoreLeftoverPixels.setter
-    def ignoreLeftoverPixels(self, will_ignoreLeftoverPixels):
-        self._ignoreLeftoverPixels = will_ignoreLeftoverPixels
-
-    # End control properties
 
     # End ALL Properties
 
@@ -180,6 +143,7 @@ class ImageBreakdownModule(object):
         self.cropped_subcomponent_dir = os.path.join(self.cropped_subcomponent_dir, self.full_image_name)
         if os.path.exists(self.cropped_subcomponent_dir):
             shutil.rmtree(self.cropped_subcomponent_dir)
+
         # Make a new output dir.
         os.makedirs(self.cropped_subcomponent_dir)
 
