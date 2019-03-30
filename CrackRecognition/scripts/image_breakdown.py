@@ -15,8 +15,6 @@ class ImageBreakdownModule(object):
     def __init__(self):
         # Absolute path to the image that will be broken down
         self._full_image_filepath = ""
-        # Image object retrieved from "_image_filepath"
-        self._full_image_object = None
         # The extension-less name of the image file
         self._full_image_name = ""
         # The extension that goes with the image name
@@ -40,13 +38,6 @@ class ImageBreakdownModule(object):
     # Begin ALL properties
 
     # Begin original image properties
-    @property
-    def full_image_object(self):
-        return self._full_image_object
-
-    @full_image_object.setter
-    def full_image_object(self, new_full_image_object):
-        self._full_image_object = new_full_image_object
 
     @property
     def full_image_name(self):
@@ -97,9 +88,9 @@ class ImageBreakdownModule(object):
         if os.path.exists(new_full_image_filepath):
             self._full_image_filepath = new_full_image_filepath
             try:
-                self.full_image_object = Image.open(self.full_image_filepath)
 
-                self.full_px_width, self.full_px_height = self.full_image_object.size
+                with Image.open(self.full_image_filepath) as image_object:
+                    self.full_px_width, self.full_px_height = image_object.size
 
                 complete_file_name = os.path.split(self.full_image_filepath)[1]
 
@@ -194,8 +185,6 @@ class ImageBreakdownModule(object):
 
         # Run breakdown
         self.image_breakdown()
-
-        self.full_image_object.close()
 
     def set_args(self):
         """
@@ -329,8 +318,9 @@ class ImageBreakdownModule(object):
                                                        self.full_image_extension)
         cropped_image_path = os.path.join(self.cropped_subcomponent_dir, cropped_image_name)
 
-        cropped_image = self.full_image_object.crop(crop_area)
-        cropped_image.save(cropped_image_path)
+        with Image.open(self.full_image_filepath) as image_object:
+            cropped_image = image_object.crop(crop_area)
+            cropped_image.save(cropped_image_path)
 
     # End non-static functions
 

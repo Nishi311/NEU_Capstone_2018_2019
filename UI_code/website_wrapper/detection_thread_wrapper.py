@@ -23,7 +23,6 @@ class RecognitionThreadWrapper(object):
         self.image_breakdown_dir = os.path.join(self.intermediary_dir, "image_breakdown")
         self.breakdown_report_dir = os.path.join(self.intermediary_dir, "breakdown_reports")
 
-
         self.output_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "output")
         self.photo_output_dir = os.path.join(self.output_dir, "finished_photos")
         self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
@@ -43,7 +42,7 @@ class RecognitionThreadWrapper(object):
     def unified_module_setup(self):
 
         self.unified_module.cropped_subcomponent_dir_filepath = self.image_breakdown_dir
-        self.unified_module.final_reports_dir = self.final_report_output_dir
+        self.unified_module.breakdown_reports_dir = self.breakdown_report_dir
         self.unified_module.final_reports_dir = self.final_report_output_dir
 
         if not os.path.exists(self.unified_module.cropped_subcomponent_dir_filepath):

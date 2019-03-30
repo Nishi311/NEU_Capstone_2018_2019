@@ -31,7 +31,7 @@ class UnifiedRecognitionModule(object):
     OUTPUT_PATH = os.path.join(THIS_FILE_PATH, "..", "output")
 
     # Default output location for the final recognition report.
-    DEFAULT_FINAL_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "recognition_report.txt")
+    DEFAULT_FINAL_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "final_reports")
 
     # Default short path for intermediary reports
     DEFAULT_INTER_REPORT_FILEPATH = os.path.join(OUTPUT_PATH, "individual_reports")
@@ -57,7 +57,8 @@ class UnifiedRecognitionModule(object):
 
         # output variables
         self.pre_wipe_output_dir = True
-        self.final_reports_dir = self.DEFAULT_INTER_REPORT_FILEPATH
+        self.breakdown_reports_dir = self.DEFAULT_INTER_REPORT_FILEPATH
+        self.final_reports_dir = self.DEFAULT_FINAL_REPORT_FILEPATH
         self.output_dir = self.OUTPUT_PATH
 
         # Variables related to image recognition
@@ -84,12 +85,16 @@ class UnifiedRecognitionModule(object):
         # wipe output directory (if populated)
         if os.listdir(self.output_dir) and self.pre_wipe_output_dir:
             self.wipe_directory(self.output_dir)
-        # create the intermediary report directory if it doesn't alr.
+
+        # create the breakdown and final report directories if they don't already exist.
+        if not os.path.exists(self.breakdown_reports_dir):
+            os.mkdir(self.breakdown_reports_dir)
         if not os.path.exists(self.final_reports_dir):
             os.mkdir(self.final_reports_dir)
 
         # Recognition module will only use one graph throughout its lifecycle.
         # set those parameters here. Will update individual files as needed.
+
         recognition_args = self.setup_recognition_arguments()
         self.recognition_module.setup_module(recognition_args)
 
@@ -100,8 +105,9 @@ class UnifiedRecognitionModule(object):
             # Go over all photos that must be checked
             for photo_path in input_photos:
                 # Set up the report output directory for this photo.
-                individual_photo_report_filepath = os.path.join(self.final_reports_dir,
+                individual_photo_report_filepath = os.path.join(self.breakdown_reports_dir,
                                                                 os.path.split(photo_path)[1].split(".")[0])
+
                 if os.path.exists(individual_photo_report_filepath):
                     self.wipe_directory(individual_photo_report_filepath)
                 else:
@@ -109,18 +115,30 @@ class UnifiedRecognitionModule(object):
                 self.recognition_module.report_location = individual_photo_report_filepath
 
                 if not self.skip_breakdown:
-                    self.breakdown_and_recognize_image(photo_path, individual_photo_report_filepath)
+
+                    self.breakdown_and_recognize_image(photo_path, individual_photo_report_filepath,
+                                                       self.final_reports_dir)
+
                 else:
                     self.recognition_module.input_filepath = photo_path
                     self.recognition_module.run_module()
         else:
-            individual_photo_report_filepath = os.path.join(self.final_reports_dir,
+            individual_photo_report_filepath = os.path.join(self.breakdown_reports_dir,
                                                             os.path.split(self.input_filepath)[1].split(".")[0])
-            if not self.skip_breakdown:
-                self.breakdown_and_recognize_image(self.input_filepath, individual_photo_report_filepath)
+
+            if os.path.exists(individual_photo_report_filepath):
+                self.wipe_directory(individual_photo_report_filepath)
             else:
-                self.recognition_module.input_filepath = self.input_filepat
-                self.recognition_module.report_location = self.report_path
+                os.makedirs(individual_photo_report_filepath)
+            self.recognition_module.report_location = individual_photo_report_filepath
+
+            if not self.skip_breakdown:
+                self.recognition_module.report_location = individual_photo_report_filepath
+                self.breakdown_and_recognize_image(self.input_filepath, individual_photo_report_filepath,
+                                                   self.final_reports_dir)
+            else:
+                self.recognition_module.input_filepath = self.input_filepath
+                self.recognition_module.report_location = self.final_reports_dir
                 self.recognition_module.run_module()
 
 
@@ -210,22 +228,27 @@ class UnifiedRecognitionModule(object):
         else:
             self.exit_with_error_msg("No arguments given!")
 
-    def breakdown_and_recognize_image(self, photo_path, final_report_path):
+    def breakdown_and_recognize_image(self, photo_path, breakdown_report_path, final_report_path):
         # Breakdown module needs to be run for every photo with different parameters.
         # Update args with every photo.
         breakdown_args = self.setup_image_breakdown_arguments(photo_path)
 
         # Break down the image into sub-images for recognition
+
         self.image_breakdown_module.run_module(breakdown_args)
+
+        # shutil.move(self.input_filepath, self.cropped_subcomponent_dir_filepath)
+
 
         # Get a list of the sub-images.
         broken_down_images = glob.glob(os.path.join(self.image_breakdown_module.cropped_subcomponent_dir, "*"))
         # run recognition on all sub-images
         for sub_photo_path in broken_down_images:
             self.recognition_module.input_filepath = sub_photo_path
+
             self.recognition_module.run_module()
         # parse the resulting sub-reports into one single report for the image.
-        self.sub_report_parser(final_report_path)
+        self.sub_report_parser(breakdown_report_path, final_report_path)
         # wipe the sub-image directory to make room for the next set.
         # self.wipe_directory(self.cropped_subcomponent_dir_filepath)
 
@@ -284,19 +307,19 @@ class UnifiedRecognitionModule(object):
 
         return recog_arg_namespace
 
-    def sub_report_parser(self, sub_report_dir):
+    def sub_report_parser(self, breakdown_report_dir, final_report_dir):
         """
         Parses all the sub-reports found in the given directory into a single, fairly high level
         overview of what the image is like in terms of positive and negative detection. Final report
         will be output to the same directory.
         :param sub_report_dir: The directory that needs to be parsed.
         """
-        if os.path.exists(sub_report_dir):
-            list_of_reports = glob.glob(os.path.join(sub_report_dir, "*"))
+        if os.path.exists(breakdown_report_dir):
+            list_of_reports = glob.glob(os.path.join(breakdown_report_dir, "*"))
 
             positive_report_list = []
             negative_report_list = []
-            report_name = os.path.split(sub_report_dir)[1]
+            report_name = os.path.split(breakdown_report_dir)[1]
             # Go through all image sub reports
             for report_path in list_of_reports:
                 with open(report_path) as r:
@@ -318,7 +341,10 @@ class UnifiedRecognitionModule(object):
                     positive_report_list.append(sub_report_name)
                 # Create the final report for the image, listing the number of neg > pos sub-images
                 # and pos > neg sub-images.
-            final_report_file = open(os.path.join(sub_report_dir, report_name + "_final_report.txt"), "w+")
+
+            testing = os.path.join(final_report_dir, report_name + "_final_report.txt")
+
+            final_report_file = open(os.path.join(final_report_dir, report_name + "_final_report.txt"), "w+")
             final_report_file.write("Name: {0}\n".format(report_name))
             final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
             final_report_file.write("Neg > Pos Image reports: \n")
@@ -332,8 +358,8 @@ class UnifiedRecognitionModule(object):
 
             final_report_file.close()
         else:
-            self.exit_with_error_msg("connecting_script, sub_report_parser(): sub_report_dir {0} does not "
-                                     "exist! Exiting".format(sub_report_dir))
+            self.exit_with_error_msg("connecting_script, sub_report_parser(): breakdown_report_dir {0} does not "
+                                     "exist! Exiting".format(breakdown_report_dir))
 
     @staticmethod
     def wipe_directory(directory_path):
