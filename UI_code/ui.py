@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 
 
-from UI_code.helper_classes.detection_thread_wrapper import RecognitionThreadWrapper
+from Interfaces.detection_thread_wrapper import RecognitionThreadWrapper
 
 import webbrowser
 import time
@@ -131,6 +131,8 @@ def hello_world():
     js_data = request.form['javascript_data']
 
     print(js_data)
+
+    return "And Hello to you too"
 
 # Opens the program to the main menu.
 def main():

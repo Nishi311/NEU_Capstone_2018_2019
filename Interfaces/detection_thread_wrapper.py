@@ -9,7 +9,7 @@ from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
 class RecognitionThreadWrapper(object):
 
-    GENERAL_IO_RELATIVE_DIR = os.path.join("..", "static", "generalIO")
+    GENERAL_IO_RELATIVE_DIR = os.path.join("..", "UI_code", "static", "generalIO")
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
     GENERAL_IO_ABS_PATH = os.path.join(THIS_FILE_PATH, GENERAL_IO_RELATIVE_DIR)
