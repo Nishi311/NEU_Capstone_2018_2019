@@ -119,6 +119,7 @@ def get_images():
 
 # Opens the program to the main menu.
 def main():
+    # TODO: add try catch-block to prevent script from running if error.
     recognition_wrapper = RecognitionThreadWrapper()
     recognition_wrapper.run_module()
 
