@@ -1,13 +1,10 @@
-# from ..CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
-
-from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
-
+import os
 import threading
 import time
-import os
 import glob
 import shutil
-# TODO: Sort out report paths between detection thread / connecting script / recognition script
+
+from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
 
 class RecognitionThreadWrapper(object):

@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, jsonify
 
+
 from UI_code.helper_classes.detection_thread_wrapper import RecognitionThreadWrapper
 
-import threading
 import webbrowser
 import time
 import os
 
-app = Flask(__name__)
 
+app = Flask(__name__)
+THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 quadrant = "quadrant_2"
 
 # Main menu
@@ -82,12 +83,16 @@ def camera_manual_control():
 
 @app.route('/count_quadrants', methods=['GET', 'POST'])
 def retrieve_available_quadrants():
-    path = "./static/images"
-    for root, dirs, files in os.walk(path):
-        print(dirs)
-        break
+    path = os.path.join(THIS_FILE_DIR_PATH,"static", "images")
+    try:
+        for root, dirs, files in os.walk(path):
+            print(dirs)
+            return jsonify(dirs)
 
-    return jsonify(dirs)
+            break
+    except Exception as e:
+        print(e)
+
 
 @app.route('/select_new_quadrant', methods=['GET', 'POST'])
 def select_new_quadrant():
@@ -106,16 +111,26 @@ def select_new_quadrant():
 def get_images():
     global quadrant
 
-    path = "./static/images/" + quadrant
+    path = os.path.join(THIS_FILE_DIR_PATH,"static", "images", quadrant)
     print(path)
-    for root, dirs, files in os.walk(path):
-        print(files)
-        break
+    try:
+        for root, dirs, files in os.walk(path):
+            print(files)
+            break
+        files = [f for f in files if not f[0] == '.']
+        files = ['/' + quadrant + '/' + f for f in files]
+        return jsonify(files)
 
-    files = [f for f in files if not f[0] == '.']
-    files = ['/'+quadrant+'/'+f for f in files]
-    return jsonify(files)
+    except Exception as e:
+        print(e)
 
+
+
+@app.route('/hello_world', methods=['POST'])
+def hello_world():
+    js_data = request.form['javascript_data']
+
+    print(js_data)
 
 # Opens the program to the main menu.
 def main():
@@ -126,6 +141,16 @@ def main():
     webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
     app.run(host='127.0.0.1')
 
+class basic(object):
+    
+    @staticmethod
+    def run_module():
+        # TODO: add try catch-block to prevent script from running if error.
+        recognition_wrapper = RecognitionThreadWrapper()
+        recognition_wrapper.run_module()
 
-if __name__ == "__main__":
-    main()
+        webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
+        app.run(host='127.0.0.1')
+
+#if __name__ == "__main__":
+#    main()
