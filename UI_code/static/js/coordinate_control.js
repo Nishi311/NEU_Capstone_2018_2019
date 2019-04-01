@@ -3,26 +3,28 @@ setInterval("update_dynamic_quadrants_progress();",1000);
 $(document).on("click", "#update_grid", function() {
 
     //get coordinate corner points
-    var top_right_x = $("#top_right-x").val();
-    var top_right_y = $("#top_right-y").val();
+    var locked_coordinate_name = $("#locked_coordinate").val();
+    var locked_coord_value = $("#locked_coordinate_value").val();
 
-    var top_left_x = $("#top_left-x").val();
-    var top_left_y = $("#top_left-y").val();
+    var top_right_var = $("#top_right_variable").val();
+    var top_right_alt = $("#top_right_alt").val();
 
-    var bottom_right_x = $("#bottom_right-x").val();
-    var bottom_right_y = $("#bottom_right-y").val();
+    var top_left_var = $("#top_left_variable").val();
+    var top_left_alt = $("#top_left_alt").val();
 
-    var bottom_left_x = $("#bottom_left-x").val();
-    var bottom_left_y = $("#bottom_left-y").val();
+    var bottom_right_var = $("#bottom_right_variable").val();
+    var bottom_right_alt = $("#bottom_right_alt").val();
+
+    var bottom_left_var = $("#bottom_left_variable").val();
+    var bottom_left_alt = $("#bottom_left_alt").val();
 
     var detect_height = 6;
     var detect_width = 6;
+    var detect
 
     // calculate number of columns and rows
-    var columns = Math.ceil((top_left_x-top_right_x)/detect_width);
-    var rows = Math.ceil((top_right_y-bottom_right_y)/detect_height);
-
-
+    var columns = Math.abs(Math.ceil((top_right_var-top_left_var)/detect_width));
+    var rows = Math.abs(Math.ceil((top_right_alt-bottom_right_alt)/detect_height));
 
     var num = rows*columns;
 
@@ -33,16 +35,17 @@ $(document).on("click", "#update_grid", function() {
 
         var left = columns*detect_width;
 
-        for(var j=0, len = columns; j < len; ++j)
-        {
+        for(var j=0, len = columns; j < len; ++j){
             var str = "Quadrant ".concat(num);
 
             if ($("div.grid-wrapper").attr("data-current") === str) {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" data-left="' + left + '" data-right="' + (left-detect_width) + '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '">' + str + '</div>';
-            } else if ($('#'.concat(str)) === str) {
-                quadrant_grid +='<div class="grid-item examined" id="' + str + '" data-left="' + left + '" data-right="' + (left-detect_width) + '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '">' + str + '</div>';
-            } else {
-                quadrant_grid +='<div class="grid-item" id="' + str + '" data-left="' + left + '" data-right="' + (left-detect_width) + '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '">' + str + '</div>';
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" locked-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
+            }
+            else if ($('#'.concat(str)) === str) {
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" locked-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
+            }
+            else {
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" locked-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
             }
 
             num -= 1;
@@ -56,11 +59,13 @@ $(document).on("click", "#update_grid", function() {
 
 
 //    }
-
     $("div.grid-wrapper").html(quadrant_grid);
     $("div.grid-wrapper").css({"grid-template-columns": "repeat("+columns+",1fr)", "grid-template-rows": "repeat("+rows+",25px)"});
     $("div.grid-wrapper").attr("data-total-number",rows*detect_height);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
+
+    $.post("/update_quadrant_config", {grid_data: quadrant_grid});
+
 });
 
 

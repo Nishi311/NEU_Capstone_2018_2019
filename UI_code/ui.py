@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 
 
 from Interfaces.detection_thread_wrapper import RecognitionThreadWrapper
-
+from Interfaces.quadrant_handling.js_quadrant_handler import JSQuadrantHandler
 import webbrowser
 import time
 import os
@@ -124,15 +124,14 @@ def get_images():
     except Exception as e:
         print(e)
 
+@app.route('/update_quadrant_config', methods=['POST'])
+def update_quadrant_config():
+    js_data = request.form['grid_data']
 
-
-@app.route('/hello_world', methods=['POST'])
-def hello_world():
-    js_data = request.form['javascript_data']
-
-    print(js_data)
+    JSQuadrantHandler().run_module(js_data)
 
     return "And Hello to you too"
+
 
 # Opens the program to the main menu.
 def main():

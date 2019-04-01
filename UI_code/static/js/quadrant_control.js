@@ -13,7 +13,6 @@ function update_dynamic_table()
         $("div.table_of_images").html(table);
     });
 
-    $.post("/hello_world", {javascript_data: "Hello World!"});
 }
 
 function update_dynamic_quadrants()
