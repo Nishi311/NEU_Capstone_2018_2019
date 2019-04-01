@@ -2,6 +2,11 @@ setInterval("update_dynamic_quadrants_progress();",1000);
 
 $(document).on("click", "#update_grid", function() {
 
+
+    //TODO: Need a better way to establish 3 coordinate system. Having one degree locked means can only scan
+    //on a strictly N/S or E/W basis.
+
+    
     //get coordinate corner points
     var locked_coordinate_name = $("#locked_coordinate").val();
     var locked_coord_value = $("#locked_coordinate_value").val();
