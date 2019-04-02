@@ -55,7 +55,7 @@ $(document).on("click", "#update_grid", function() {
     var quad_long_displacement_meters = 0;
     var quad_long_displacement_DD = 0;
 
-    var quad_alt_displacement_meters = top_left_alt - bottom_left_alt;
+    var quad_alt_displacement_meters = 0;
 
     // Variables that contain the number of rows / columns necessary to make even sub-grids between the specified edges
     // of the grid structure.
@@ -135,7 +135,10 @@ $(document).on("click", "#update_grid", function() {
         quad_lat_displacement_DD = quad_lat_displacement_meters / one_degree_const_meters_lat;
     }
 
-    rows = Math.ceil((top_left_alt-bottom_left_alt)/quad_side_meters);
+    var total_altitude_displacement_meters = top_left_alt-bottom_left_alt;
+    rows = Math.ceil(total_altitude_displacement_meters/quad_side_meters);
+
+    quad_alt_displacement_meters = quad_side_meters;
 
     // Assuming starting from left-most
 
@@ -152,7 +155,13 @@ $(document).on("click", "#update_grid", function() {
     var quad_bottom_limit = quad_top_limit - quad_alt_displacement_meters;
 
     for(var i= 0, end = rows; i<end; ++i){
+
+        if (quad_bottom_limit < bottom_left_alt){
+            quad_bottom_limit = bottom_left_alt;
+        }
+
         for(var j=0, len = columns; j < len; ++j){
+
             var str = "Quadrant ".concat(quad_num);
 
             if ($("div.grid-wrapper").attr("data-current") === str) {
@@ -245,3 +254,5 @@ function dd_lat_long_diff(lat1, lon1, lat2, lon2){
 		return dist;
 	}
 }
+
+
