@@ -10,21 +10,21 @@ $(document).on("click", "#update_grid", function() {
     var quad_side_meters = parseFloat($("#quadrant_side_size").val());
 
     //get coordinate corner points
-    var top_right_lat = parseFloat($("#top_right_lat").val());
-    var top_right_long = parseFloat($("#top_right_long").val());
-    var top_right_alt = parseFloat($("#top_right_alt").val());
+    var top_right_lat = parseFloat($("#right_lat").val());
+    var top_right_long = parseFloat($("#right_long").val());
+    var top_right_alt = parseFloat($("#top_alt").val());
 
-    var top_left_lat = parseFloat($("#top_left_lat").val());
-    var top_left_long = parseFloat($("#top_left_long").val());
-    var top_left_alt = parseFloat($("#top_left_alt").val());
+    var top_left_lat = parseFloat($("#left_lat").val());
+    var top_left_long = parseFloat($("#left_long").val());
+    var top_left_alt = parseFloat($("#top_alt").val());
 
-    var bottom_right_lat = parseFloat($("#bottom_right_lat").val());
-    var bottom_right_long = parseFloat($("#bottom_right_long").val());
-    var bottom_right_alt = parseFloat($("#bottom_right_alt").val());
+    var bottom_right_lat = parseFloat($("#right_lat").val());
+    var bottom_right_long = parseFloat($("#right_long").val());
+    var bottom_right_alt = parseFloat($("#bottom_alt").val());
 
-    var bottom_left_lat = parseFloat($("#bottom_left_lat").val());
-    var bottom_left_long = parseFloat($("#bottom_left_long").val());
-    var bottom_left_alt = parseFloat($("#bottom_left_alt").val());
+    var bottom_left_lat = parseFloat($("#left_lat").val());
+    var bottom_left_long = parseFloat($("#left_long").val());
+    var bottom_left_alt = parseFloat($("#bottom_alt").val());
 
     // Thanks to https://en.wikipedia.org/wiki/Decimal_degrees for the info
     // This number represents the number of meters represented by one degree of latitude
