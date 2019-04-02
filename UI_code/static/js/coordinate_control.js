@@ -191,14 +191,24 @@ $(document).on("click", "#update_grid", function() {
 
 
 $(document).on("click", "div.grid-item", function() {
-    var top = $(this).attr("data-top");
-    var bot = $(this).attr("data-bottom");
-    var left = $(this).attr("data-left");
-    var right = $(this).attr("data-right");
-    var str = "top coordinate: " + top + "\n";
-    str += "bot coordinate: " + bot + "\n";
-    str += "left coordinate: " + left + "\n";
-    str += "right coordinate: " + right + "\n";
+
+    var quadrant_name = $(this).attr("id");
+
+    var lat_limit_left = $(this).attr("lat_limit_left");
+    var long_limit_left = $(this).attr("long_limit_left");
+
+    var lat_limit_right = $(this).attr("lat_limit_right");
+    var long_limit_right = $(this).attr("long_limit_right");
+
+    var top_limit = $(this).attr("top_limit");
+    var bottom_limit = $(this).attr("bottom_limit");
+
+    var str = quadrant_name + "\n\n"
+    str += "Decimal Degree Format: (Latitude, Longitude, Altitude)\n\n"
+    str += "Top Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + top_limit + ")\n";
+    str += "Top Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + top_limit + ")\n";
+    str += "Bottom Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + bottom_limit + ")\n";
+    str += "Bottom Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + bottom_limit + ")\n";
 
     alert(str);
 });
