@@ -6,6 +6,9 @@ $(document).on("click", "#update_grid", function() {
     //TODO: Need a better way to establish 3 coordinate system. Having one degree locked means can only scan
     //on a strictly N/S or E/W basis.
 
+    // Length of a grid in METERS
+    var quad_side_meters = parseFloat($("#quadrant_side_size").val());
+
     //get coordinate corner points
     var top_right_lat = parseFloat($("#top_right_lat").val());
     var top_right_long = parseFloat($("#top_right_long").val());
@@ -22,7 +25,6 @@ $(document).on("click", "#update_grid", function() {
     var bottom_left_lat = parseFloat($("#bottom_left_lat").val());
     var bottom_left_long = parseFloat($("#bottom_left_long").val());
     var bottom_left_alt = parseFloat($("#bottom_left_alt").val());
-
 
     // Thanks to https://en.wikipedia.org/wiki/Decimal_degrees for the info
     // This number represents the number of meters represented by one degree of latitude
@@ -41,10 +43,6 @@ $(document).on("click", "#update_grid", function() {
     if (Math.abs(top_right_long) > 67){
         one_degree_const_meters_long = 43496;
     }
-
-    // Length of a grid in METERS
-//    var quad_side_meters = 1;
-    var quad_side_meters = 111320;
 
     // Control variables that govern behavior of DD displacement calculation
     var lat_locked = false;
