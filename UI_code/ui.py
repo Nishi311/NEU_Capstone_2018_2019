@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 
 
 from Interfaces.detection_thread_wrapper import RecognitionThreadWrapper
-from Interfaces.quadrant_handling.js_quadrant_handler import JSQuadrantHandler
+from Interfaces.quadrant_handling.quadrant_handler import QuadrantHandler
 import webbrowser
 import time
 import os
@@ -127,8 +127,8 @@ def get_images():
 @app.route('/update_quadrant_config', methods=['POST'])
 def update_quadrant_config():
     js_data = request.form['grid_data']
-
-    JSQuadrantHandler().run_module(js_data)
+    quad_handler = QuadrantHandler()
+    quad_handler.write_quadrants_to_config(js_data)
 
     return "And Hello to you too"
 

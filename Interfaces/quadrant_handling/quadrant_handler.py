@@ -3,19 +3,45 @@ import os
 from .quadrant_object import Quadrant
 
 
-class JSQuadrantHandler(object):
+class QuadrantHandler(object):
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
     def __init__(self):
-        self.config_file_name = "quadrant_"
-        self.config_path = os.path.join(self.THIS_FILE_PATH, "..", "configs", self.config_file_name)
-        self.quadrant_list = []
+        self.config_file_name = "quadrant_config.txt"
+        self.config_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs")
+        self.config_path = os.path.join(self.config_dir, self.config_file_name)
 
-    def run_module(self, raw_js_string):
-        self.quadrant_list = self.parse_raw_input(raw_js_string)
+    def get_quadrant_config_path(self):
+        return self.config_path
 
-    def parse_raw_input(self, raw_js_string):
+    def write_quadrants_to_config(self, raw_js_string):
+        if not os.path.exists(self.config_dir):
+            os.makedirs(self.config_dir)
+
+        quadrant_list = self.parse_raw_js_input(raw_js_string)
+
+        with open(self.config_path, "w") as config_file:
+            for quadrant in quadrant_list:
+                config_file.write(quadrant.generate_string())
+
+    def read_quadrants_from_config(self):
+        if not os.path.exists(self.config_path):
+            print("quadrant_handler, read_quadrants_from_config(): ERROR. Could not find quadrant config file "
+                  "{0}".format(self.config_path))
+            return False
+
+        try:
+            with open(self.config_path, "r") as config_file:
+                raw_config_string = config_file.readlines()
+        except IOError as e:
+            print("Quadrant_handler, read_quadrants_from_config(): Could not read from config file {0}. Returned "
+                  "Error {1}".format(self.config_path, e))
+            return False
+
+        return self.parse_raw_config_input(raw_config_string)
+
+    def parse_raw_js_input(self, raw_js_string):
         # Data comes in in a big string like this:
         #
         # <div class="grid-item examined-next" id="Quadrant 6" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.665361236570813" long_limit_right="1.665361236570813" top_limit="2" bottom_limit="1"></div>
@@ -48,9 +74,18 @@ class JSQuadrantHandler(object):
 
         return quadrant_objects
 
-    def write_quadrants_to_config(self):
-        with open(self.config_path, "w") as config_file:
-            for quadrant in self.quadrant_list:
-                config_file.print(quadrant.generate_string())
+    def parse_raw_config_input(self, raw_config_input):
 
+        super_string = ""
+        for line in raw_config_input:
+            super_string += line.replace('\n', ' ')
 
+        refined_quad_strings = super_string.split("Quadrant Name: ")
+        refined_quad_strings.pop(0)
+        quadrant_objects = []
+        for refined_quad_string in refined_quad_strings:
+            new_quad_object = Quadrant()
+            new_quad_object.parse_config_string(refined_quad_string)
+            quadrant_objects.append(new_quad_object)
+
+        return quadrant_objects

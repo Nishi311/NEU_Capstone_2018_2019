@@ -18,45 +18,45 @@ class Quadrant(object):
                            "Quadrant 56" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.07"
                            long_limit_right="1.07" top_limit="5" bottom_limit="1"
         """
-        name_string, lat_left_limit_on = js_string.split("lat_limit_left=")
-        lat_left_limit, long_left_limit_on = lat_left_limit_on.split("long_limit_left=")
-        long_left_limit, right_lat_limit_on = long_left_limit_on.split("lat_limit_right=")
+        name_string, left_lat_limit_on = js_string.split("lat_limit_left=")
+        left_lat_limit, left_long_limit_on = left_lat_limit_on.split("long_limit_left=")
+        left_long_limit, right_lat_limit_on = left_long_limit_on.split("lat_limit_right=")
         right_lat_limit, right_long_limit_on = right_lat_limit_on.split("long_limit_right=")
-        right_long_limit, top_limit_on = right_lat_limit_on.split("top_limit=")
-        top_limit, bottom_limit = right_long_limit_on.split("bottom_limit=")
+        right_long_limit, top_limit_on = right_long_limit_on.split("top_limit=")
+        top_limit, bottom_limit = top_limit_on.split("bottom_limit=")
 
         self.quadrant_name = name_string.replace('\"', '')
-        self.coord_dict["left_latitude_DD"] = lat_left_limit.replace('\"', '')
-        self.coord_dict["left_longitude_DD"] = long_left_limit.replace('\"', '')
-        self.coord_dict["right_latitude_DD"] = right_lat_limit.replace('\"', '')
-        self.coord_dict["right_longitude_DD"] = right_long_limit.replace('\"', '')
-        self.coord_dict["top_altitude_Meters"] = top_limit.replace('\"', '')
-        self.coord_dict["bottom_altitude_Meters"] = bottom_limit.replace('\"', '')
+        self.coord_dict["left_latitude_DD"] = left_lat_limit.replace('\"', '').replace(' ', '')
+        self.coord_dict["left_longitude_DD"] = left_long_limit.replace('\"', '').replace(' ', '')
+        self.coord_dict["right_latitude_DD"] = right_lat_limit.replace('\"', '').replace(' ', '')
+        self.coord_dict["right_longitude_DD"] = right_long_limit.replace('\"', '').replace(' ', '')
+        self.coord_dict["top_altitude_Meters"] = top_limit.replace('\"', '').replace(' ', '')
+        self.coord_dict["bottom_altitude_Meters"] = bottom_limit.replace('\"', '').replace(' ', '')
 
     def parse_config_string(self, config_string):
         name_string, left_limit_on = config_string.split("Left_Limit (DD): ")
         left_limit, right_limit_on = left_limit_on.split("Right_Limit (DD):")
         right_limit, top_limit_on = right_limit_on.split("Top_Limit (m): ")
-        top_limit, bottom_limit= top_limit_on.split("Bottom_Limit: ")
+        top_limit, bottom_limit = top_limit_on.split("Bottom_Limit (m): ")
 
-        self.quadrant_name = name_string.split("Quadrant Name: ")[1]
+        self.quadrant_name = name_string.replace(' ', '')
 
-        self.coord_dict["left_latitude_DD"] = left_limit.replace('\"', '').split(",")[0]
-        self.coord_dict["left_longitude_DD"] = left_limit.replace('\"', '').split(",")[1]
-        self.coord_dict["right_latitude_DD"] = right_limit.replace('\"', '').split(",")[0]
-        self.coord_dict["right_longitude_DD"] = right_limit.replace('\"', '').split(",")[1]
-        self.coord_dict["top_altitude_Meters"] = top_limit
-        self.coord_dict["bottom_altitude_Meters"] = bottom_limit
+        self.coord_dict["left_latitude_DD"] = left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0]
+        self.coord_dict["left_longitude_DD"] = left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1]
+        self.coord_dict["right_latitude_DD"] = right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0]
+        self.coord_dict["right_longitude_DD"] = right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1]
+        self.coord_dict["top_altitude_Meters"] = top_limit.replace(' ', '')
+        self.coord_dict["bottom_altitude_Meters"] = bottom_limit.replace(' ', '')
 
     def generate_string(self):
         output_string = "Quadrant Name: {0}\nLeft_Limit (DD): ({1}, {2})\nRight_Limit (DD): ({3}, {4})\nTop_Limit (m): " \
-                        "{5}\nBottom_Limit: {6}\n".formt(self.quadrant_name,
-                                                         self.coord_dict["left_latitude_DD"],
-                                                         self.coord_dict["left_longitude_DD"],
-                                                         self.coord_dict["right_latitude_DD"],
-                                                         self.coord_dict["right_longitude_DD"],
-                                                         self.coord_dict["top_altitude_Meters"],
-                                                         self.coord_dict["bottom_altitude_Meters"])
+                        "{5}\nBottom_Limit (m): {6}\n\n".format(self.quadrant_name,
+                                                                self.coord_dict["left_latitude_DD"],
+                                                                self.coord_dict["left_longitude_DD"],
+                                                                self.coord_dict["right_latitude_DD"],
+                                                                self.coord_dict["right_longitude_DD"],
+                                                                self.coord_dict["top_altitude_Meters"],
+                                                                self.coord_dict["bottom_altitude_Meters"])
         return output_string
 
     def check_coordinates(self, coordinate_list):
