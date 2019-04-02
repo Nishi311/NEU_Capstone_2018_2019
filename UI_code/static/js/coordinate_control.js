@@ -32,15 +32,18 @@ $(document).on("click", "#update_grid", function() {
     // NOTE: This varies as you get closer / further to equator and so will be a bit more dynamic.
     var one_degree_const_meters_long = 111320;
 
-    if Math.abs(top_right_long) > 23;
+    if (Math.abs(top_right_long) > 23){
         one_degree_const_meters_long = 102470;
-    if Math.abs(top_right_long) > 45;
+    }
+    if (Math.abs(top_right_long) > 45){
         one_degree_const_meters_long = 78710;
-    if Math.abs(top_right_long) > 67;
+    }
+    if (Math.abs(top_right_long) > 67){
         one_degree_const_meters_long = 43496;
+    }
 
     // Length of a grid in METERS
-    var quad_side_meters = 6;
+    var quad_side_meters = 1;
 
 
     // Control variables that govern behavior of DD displacement calculation
@@ -209,11 +212,10 @@ function update_dynamic_quadrants_progress()
 
 // Courtesy of https://www.geodatasource.com/developers/javascript
 // I don't actually know how this thing works.
-function dd_lat_long_diff(lat1, lon1, lat2, lon2)
-	if ((lat1 == lat2) && (lon1 == lon2)) {
+function dd_lat_long_diff(lat1, lon1, lat2, lon2){
+	if ((lat1 == lat2) && (lon1 == lon2)){
 		return 0;
-	}
-	else {
+	} else {
 		var radlat1 = Math.PI * lat1/180;
 		var radlat2 = Math.PI * lat2/180;
 		var theta = lon1-lon2;
