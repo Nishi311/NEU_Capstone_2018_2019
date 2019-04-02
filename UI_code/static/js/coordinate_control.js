@@ -7,21 +7,21 @@ $(document).on("click", "#update_grid", function() {
     //on a strictly N/S or E/W basis.
 
     //get coordinate corner points
-    var top_right_lat = $("#top_right_lat").val();
-    var top_right_long = $("#top_right_long").val();
-    var top_right_alt = $("#top_right_alt").val();
+    var top_right_lat = parseFloat($("#top_right_lat").val());
+    var top_right_long = parseFloat($("#top_right_long").val());
+    var top_right_alt = parseFloat($("#top_right_alt").val());
 
-    var top_left_lat = $("#top_left_lat").val();
-    var top_left_long = $("#top_left_long").val();
-    var top_left_alt = $("#top_left_alt").val();
+    var top_left_lat = parseFloat($("#top_left_lat").val());
+    var top_left_long = parseFloat($("#top_left_long").val());
+    var top_left_alt = parseFloat($("#top_left_alt").val());
 
-    var bottom_right_lat = $("#bottom_right_lat").val();
-    var bottom_right_long = $("#bottom_right_long").val();
-    var bottom_right_alt = $("#bottom_right_alt").val();
+    var bottom_right_lat = parseFloat($("#bottom_right_lat").val());
+    var bottom_right_long = parseFloat($("#bottom_right_long").val());
+    var bottom_right_alt = parseFloat($("#bottom_right_alt").val());
 
-    var bottom_left_lat = $("#bottom_left_lat").val();
-    var bottom_left_long = $("#bottom_left_long").val();
-    var bottom_left_alt = $("#bottom_left_alt").val();
+    var bottom_left_lat = parseFloat($("#bottom_left_lat").val());
+    var bottom_left_long = parseFloat($("#bottom_left_long").val());
+    var bottom_left_alt = parseFloat($("#bottom_left_alt").val());
 
 
     // Thanks to https://en.wikipedia.org/wiki/Decimal_degrees for the info
@@ -43,8 +43,8 @@ $(document).on("click", "#update_grid", function() {
     }
 
     // Length of a grid in METERS
-    var quad_side_meters = 1;
-
+//    var quad_side_meters = 1;
+    var quad_side_meters = 111320;
 
     // Control variables that govern behavior of DD displacement calculation
     var lat_locked = false;
@@ -63,7 +63,6 @@ $(document).on("click", "#update_grid", function() {
     // of the grid structure.
     var columns = 0;
     var rows = 0;
-
     /* If either the latitudes or the longitudes match, then only the opposite parameter needs to be offset
        otherwise, both parameters will need to be offset.
 
@@ -77,7 +76,7 @@ $(document).on("click", "#update_grid", function() {
         lat_locked = true;
 
         quad_long_displacement_meters = quad_side_meters;
-        var long_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long);
+        var long_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
@@ -94,7 +93,7 @@ $(document).on("click", "#update_grid", function() {
         long_locked = true;
 
         quad_lat_displacement_meters = quad_side_meters;
-        var lat_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long);
+        var lat_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
@@ -111,28 +110,28 @@ $(document).on("click", "#update_grid", function() {
         // If neither Lat NOR Long are locked, then we the displacement necessary to affect a grid must be split evenly
         // between the two. This displacement will be the two arms of a right triangle where the  hypotenuse is of
         // "quade_side_meters" length.
-        var hypotenuse_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long) / quad_side_meters;
+        var hypotenuse_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
         arm_diff_meters = Math.sqrt(Math.pow(hypotenuse_diff_meters, 2) / 2);
+
+        columns = Math.ceil(hypotenuse_diff_meters/quad_side_meters);
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
         if (top_left_long < top_right_long){
-            quad_long_displacement_meters = arm_diff_meters;
+            quad_long_displacement_meters = arm_diff_meters / columns;
         } else{
-            quad_long_displacement_meters = -arm_diff_meters;
+            quad_long_displacement_meters = -arm_diff_meters / columns;
         }
 
         quad_long_displacement_DD = quad_long_displacement_meters / one_degree_const_meters_long;
 
         if (top_left_lat < top_right_lat){
-            quad_lat_displacement_meters = arm_diff_meters;
+            quad_lat_displacement_meters = arm_diff_meters / columns;
         } else{
-            quad_lat_displacement_meters = -arm_diff_meters;
+            quad_lat_displacement_meters = -arm_diff_meters / columns;
         }
 
-        quad_long_displacement_DD = quad_lat_displacement_meters / one_degree_const_meters_lat;
-
-        columns = Math.ceil(hypotenuse_diff_meters/quad_side_meters);
+        quad_lat_displacement_DD = quad_lat_displacement_meters / one_degree_const_meters_lat;
     }
 
     rows = Math.ceil((top_left_alt-bottom_left_alt)/quad_side_meters);
@@ -142,18 +141,18 @@ $(document).on("click", "#update_grid", function() {
     var quad_num = rows*columns;
     var quadrant_grid = '';
 
-    quad_left_lat_limit = top_left_lat;
-    quad_left_long_limit = top_left_long;
+    var quad_left_lat_limit = top_left_lat;
+    var quad_left_long_limit = top_left_long;
 
-    quad_right_lat_limit = left_lat_limit - quad_lat_displacement_DD;
-    quad_right_long_limit = left_long_limit - quad_long_displacement_DD;
+    var quad_right_lat_limit = quad_left_lat_limit + quad_lat_displacement_DD;
+    var quad_right_long_limit = quad_left_long_limit + quad_long_displacement_DD;
 
-    quad_top_limit = top_left_alt;
-    quad_bottom_limit = quad_top_limit - quad_alt_displacement_meters;
+    var quad_top_limit = top_left_alt;
+    var quad_bottom_limit = quad_top_limit - quad_alt_displacement_meters;
 
     for(var i= 0, end = rows; i<end; ++i){
         for(var j=0, len = columns; j < len; ++j){
-            var str = "Quadrant ".concat(num);
+            var str = "Quadrant ".concat(quad_num);
 
             if ($("div.grid-wrapper").attr("data-current") === str) {
                 quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
@@ -165,13 +164,13 @@ $(document).on("click", "#update_grid", function() {
                 quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
 
-            num -= 1;
+            quad_num -= 1;
 
             quad_left_lat_limit = quad_right_lat_limit;
             quad_left_long_limit = quad_right_long_limit;
 
-            quad_right_lat_limit = left_lat_limit - quad_lat_displacement_DD;
-            quad_right_long_limit = left_long_limit - quad_long_displacement_DD;
+            quad_right_lat_limit = quad_left_lat_limit + quad_lat_displacement_DD;
+            quad_right_long_limit = quad_left_long_limit + quad_long_displacement_DD;
 
         }
         quad_top_limit = quad_bottom_limit;
@@ -180,7 +179,7 @@ $(document).on("click", "#update_grid", function() {
 
     $("div.grid-wrapper").html(quadrant_grid);
     $("div.grid-wrapper").css({"grid-template-columns": "repeat("+columns+",1fr)", "grid-template-rows": "repeat("+rows+",25px)"});
-    $("div.grid-wrapper").attr("data-total-number",rows*detect_height);
+    $("div.grid-wrapper").attr("data-total-number",rows*quad_side_meters);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
 
     $.post("/update_quadrant_config", {grid_data: quadrant_grid});
@@ -235,5 +234,3 @@ function dd_lat_long_diff(lat1, lon1, lat2, lon2){
 		return dist;
 	}
 }
-
-//var val = $("div.grid-wrapper").attr("data-current");
