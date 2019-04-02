@@ -23,91 +23,158 @@ $(document).on("click", "#update_grid", function() {
     var bottom_left_long = $("#bottom_left_long").val();
     var bottom_left_alt = $("#bottom_left_alt").val();
 
+
+    // Thanks to https://en.wikipedia.org/wiki/Decimal_degrees for the info
+    // This number represents the number of meters represented by one degree of latitude
+    var one_degree_const_meters_lat = 111320;
+
+    // This number represents the number of meters represented by one degree of longitude.
+    // NOTE: This varies as you get closer / further to equator and so will be a bit more dynamic.
+    var one_degree_const_meters_long = 111320;
+
+    if Math.abs(top_right_long) > 23;
+        one_degree_const_meters_long = 102470;
+    if Math.abs(top_right_long) > 45;
+        one_degree_const_meters_long = 78710;
+    if Math.abs(top_right_long) > 67;
+        one_degree_const_meters_long = 43496;
+
     // Length of a grid in METERS
-    var quad_length_meters = 6;
-    var quad_width_meters = 6;
+    var quad_side_meters = 6;
 
-    var quad_length_offset_DD = offset_calculation
 
-    var lat_diff = top_right_lat-top_left_lat
-    var long_diff = top_right_long-top_left_long
+    // Control variables that govern behavior of DD displacement calculation
+    var lat_locked = false;
+    var long_locked = false;
+
+    // Variables that handle the lat / long displacement required to create quadrants of "quad_side_meters" dimensions
+    var quad_lat_displacement_meters = 0;
+    var quad_lat_displacement_DD = 0;
+
+    var quad_long_displacement_meters = 0;
+    var quad_long_displacement_DD = 0;
+
+    var quad_alt_displacement_meters = top_left_alt - bottom_left_alt;
+
+    // Variables that contain the number of rows / columns necessary to make even sub-grids between the specified edges
+    // of the grid structure.
+    var columns = 0;
+    var rows = 0;
+
+    /* If either the latitudes or the longitudes match, then only the opposite parameter needs to be offset
+       otherwise, both parameters will need to be offset.
+
+       In the former scenario, the offset (which will need to be converted from meters to Decimal Degree format) will be
+       the full "quad_side_meters".
+
+       In the latter scenario, the two points form the hypotenuse (of length "quad_side_meters") of a right triangle and
+       the lat / long offset will be represented by the two equal length legs of the triangle.
+    */
+    if (top_left_lat == top_right_lat){
+        lat_locked = true;
+
+        quad_long_displacement_meters = quad_side_meters;
+        var long_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long);
+
+        // Depending on what is considered the left and right coordinates, you may need to either add or subtract
+        // the displacement.
+        if (top_left_long < top_right_long){
+            quad_long_displacement_DD = long_diff_meters / one_degree_const_meters_long;
+        } else{
+            quad_long_displacement_DD = -long_diff_meters / one_degree_const_meters_long;
+        }
+
+        columns = Math.ceil(long_diff_meters/quad_side_meters);
+    }
+
+    if (top_left_long == top_right_long){
+        long_locked = true;
+
+        quad_lat_displacement_meters = quad_side_meters;
+        var lat_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long);
+
+        // Depending on what is considered the left and right coordinates, you may need to either add or subtract
+        // the displacement.
+        if (top_left_lat < top_right_lat){
+            quad_lat_displacement_DD = lat_diff_meters / one_degree_const_meters_lat;
+        } else{
+            quad_lat_displacement_DD = -lat_diff_meters / one_degree_const_meters_lat;
+        }
+
+        columns = Math.ceil(lat_diff_meters/quad_side_meters);
+    }
+
+    if (!lat_locked && !long_locked){
+        // If neither Lat NOR Long are locked, then we the displacement necessary to affect a grid must be split evenly
+        // between the two. This displacement will be the two arms of a right triangle where the  hypotenuse is of
+        // "quade_side_meters" length.
+        var hypotenuse_diff_meters = dd_lat_long_diff(top_left_lat, top_right_lat, top_left_long, top_right_long) / quad_side_meters;
+        arm_diff_meters = Math.sqrt(Math.pow(hypotenuse_diff_meters, 2) / 2);
+
+        // Depending on what is considered the left and right coordinates, you may need to either add or subtract
+        // the displacement.
+        if (top_left_long < top_right_long){
+            quad_long_displacement_meters = arm_diff_meters;
+        } else{
+            quad_long_displacement_meters = -arm_diff_meters;
+        }
+
+        quad_long_displacement_DD = quad_long_displacement_meters / one_degree_const_meters_long;
+
+        if (top_left_lat < top_right_lat){
+            quad_lat_displacement_meters = arm_diff_meters;
+        } else{
+            quad_lat_displacement_meters = -arm_diff_meters;
+        }
+
+        quad_long_displacement_DD = quad_lat_displacement_meters / one_degree_const_meters_lat;
+
+        columns = Math.ceil(hypotenuse_diff_meters/quad_side_meters);
+    }
+
+    rows = Math.ceil((top_left_alt-bottom_left_alt)/quad_side_meters);
 
     // Assuming starting from left-most
 
-    // calculate number of columns and rows
-    //TODO: 3 Coordinate system issues largely revolve around how columns are formulated. Don't want to think
-    // About that right now but you will need to change column calculations to account for diagonals.
-    var columns = Math.ceil(Math.sqrt(Math.pow(lat_diff, 2) + Math.pow(long_diff, 2))/detect_width);
-    var rows = Math.ceil(Math.abs(Math.ceil((top_right_alt-bottom_right_alt)/detect_height)));
-
-    var num = rows*columns;
-
+    var quad_num = rows*columns;
     var quadrant_grid = '';
-    var top = rows*detect_height;
 
-    /*
-        THOUGHT BLURB: The fundamental problem is that Lat / Long do NOT match to meter offsets.
-        Need to figure out the line from top left to top right of a grid.
-        Need to figure out how to progress x number of meters along that line from one end to the other.
-        Need to figure out how to get the lat / long coordinates from any point on that line.
+    quad_left_lat_limit = top_left_lat;
+    quad_left_long_limit = top_left_long;
 
-        Need to figure out what to do when dividing the length of that line by x does not result in a clean division.
+    quad_right_lat_limit = left_lat_limit - quad_lat_displacement_DD;
+    quad_right_long_limit = left_long_limit - quad_long_displacement_DD;
 
-        What system of numbers do I use to keep track of that?
-
-        LOOK AT THIS.
-        https://www.movable-type.co.uk/scripts/latlong.html
-    */
-
-
-
+    quad_top_limit = top_left_alt;
+    quad_bottom_limit = quad_top_limit - quad_alt_displacement_meters;
 
     for(var i= 0, end = rows; i<end; ++i){
-
-        var left = columns*detect_width;
-        if (left-detect_width < 0){
-            var right = 0
-        }
-        else{
-            var right = left-detect_width;
-        }
-
-        var left_lat_long_coord = Math.sqrt(Math.pow(left,2)/2)
-        var right_lat_long_coord = Math.sqrt(Math.pow(right,2)/2)
-
-        quad_lat = Math.sqrt(Math.pow())
-
         for(var j=0, len = columns; j < len; ++j){
             var str = "Quadrant ".concat(num);
 
             if ($("div.grid-wrapper").attr("data-current") === str) {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
             else if ($('#'.concat(str)) === str) {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" locked-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
             else {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" locked-coord="' + locked_coordinate_name+ '" locked-coord-value="' + locked_coord_value + '" data-left="' + left + '" data-right="' + (left-detect_width)+ '" data-top="' + top + '" data-bottom="' + (top-detect_height) + '"></div>';
+                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
 
             num -= 1;
 
-            if (left-detect_width < 0){
-                left = Math.abs(left-detect_width)
-            }
+            quad_left_lat_limit = quad_right_lat_limit;
+            quad_left_long_limit = quad_right_long_limit;
 
-            left -= detect_width;
-
+            quad_right_lat_limit = left_lat_limit - quad_lat_displacement_DD;
+            quad_right_long_limit = left_long_limit - quad_long_displacement_DD;
 
         }
-        top -=detect_height;
+        quad_top_limit = quad_bottom_limit;
+        quad_bottom_limit = quad_top_limit - quad_alt_displacement_meters;
     }
 
-//    for (var k = num, len = 0; i > len; --i) {
-//        top += 6;
-
-
-//    }
     $("div.grid-wrapper").html(quadrant_grid);
     $("div.grid-wrapper").css({"grid-template-columns": "repeat("+columns+",1fr)", "grid-template-rows": "repeat("+rows+",25px)"});
     $("div.grid-wrapper").attr("data-total-number",rows*detect_height);
@@ -131,24 +198,6 @@ $(document).on("click", "div.grid-item", function() {
     alert(str);
 });
 
-//Thanks to Numan Karaasian on stack overflow:
-//https://stackoverflow.com/questions/7477003/calculating-new-longitude-latitude-from-old-n-meters
-
-function offset_calculation(var meters, var orig_lat, var orig_long){
-    // number of km per degree = ~111km (111.32 in google maps, but range varies
-    // between 110.567km at the equator and 111.699km at the poles)
-    // 1km in degree = 1 / 111.32km = 0.0089
-    // 1m in degree = 0.0089 / 1000 = 0.0000089
-    var coef = meters * 0.0000089;
-
-    var new_lat = orig_lat + coef;
-
-    // pi / 180 = 0.018
-    var new_long = orig_long + coef / Math.cos(orig_lat * 0.018);
-
-    return [new_lat, new_long]
-}
-
 function update_dynamic_quadrants_progress()
 {
     var total = $("div.grid-wrapper").attr("data-total-number");
@@ -156,6 +205,33 @@ function update_dynamic_quadrants_progress()
 
     $("#myBar").css( "width", ((num/total)*100));
     $("#myBar").text("".concat((num/total)*100).concat("% Completed"));
+}
+
+// Courtesy of https://www.geodatasource.com/developers/javascript
+// I don't actually know how this thing works.
+function dd_lat_long_diff(lat1, lon1, lat2, lon2)
+	if ((lat1 == lat2) && (lon1 == lon2)) {
+		return 0;
+	}
+	else {
+		var radlat1 = Math.PI * lat1/180;
+		var radlat2 = Math.PI * lat2/180;
+		var theta = lon1-lon2;
+		var radtheta = Math.PI * theta/180;
+		var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+		if (dist > 1) {
+			dist = 1;
+		}
+		dist = Math.acos(dist);
+		dist = dist * 180/Math.PI;
+		dist = dist * 60 * 1.1515;
+		dist = dist * 1.609344;
+
+        //Final answer given in Kilometers, quick conversion to meters
+        dist = dist * 1000;
+
+		return dist;
+	}
 }
 
 //var val = $("div.grid-wrapper").attr("data-current");
