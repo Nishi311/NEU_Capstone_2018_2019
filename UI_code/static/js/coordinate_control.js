@@ -76,34 +76,37 @@ $(document).on("click", "#update_grid", function() {
         lat_locked = true;
 
         quad_long_displacement_meters = quad_side_meters;
-        var long_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
+
+        var total_long_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
+        columns = Math.ceil(total_long_diff_meters/quad_side_meters);
+
+        quad_long_displacement_meters = total_long_diff_meters / columns;
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
         if (top_left_long < top_right_long){
-            quad_long_displacement_DD = long_diff_meters / one_degree_const_meters_long;
-        } else{
-            quad_long_displacement_DD = -long_diff_meters / one_degree_const_meters_long;
+            quad_long_displacement_DD = quad_long_displacement_meters / one_degree_const_meters_long;
+        } else {
+            quad_long_displacement_DD = -quad_long_displacement_meters / one_degree_const_meters_long;
         }
-
-        columns = Math.ceil(long_diff_meters/quad_side_meters);
     }
 
     if (top_left_long == top_right_long){
         long_locked = true;
 
         quad_lat_displacement_meters = quad_side_meters;
-        var lat_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
+        var total_lat_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
+        columns = Math.ceil(total_lat_diff_meters/quad_side_meters);
+
+        quad_lat_displacement_meters = total_lat_diff_meters / columns;
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
         if (top_left_lat < top_right_lat){
-            quad_lat_displacement_DD = lat_diff_meters / one_degree_const_meters_lat;
+            quad_lat_displacement_DD = quad_lat_displacement_meters / one_degree_const_meters_lat;
         } else{
-            quad_lat_displacement_DD = -lat_diff_meters / one_degree_const_meters_lat;
+            quad_lat_displacement_DD = -quad_lat_displacement_meters / one_degree_const_meters_lat;
         }
-
-        columns = Math.ceil(lat_diff_meters/quad_side_meters);
     }
 
     if (!lat_locked && !long_locked){
