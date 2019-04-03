@@ -37,7 +37,7 @@ class QuadrantHandler(object):
                   "Error {1}".format(self.CONFIG_PATH, e))
             return False
 
-        return self.parse_raw_config_input(raw_config_string)
+        self.parse_raw_config_input(raw_config_string)
 
     def parse_raw_js_input(self, raw_js_string):
         # Data comes in in a big string like this:
@@ -96,3 +96,4 @@ class QuadrantHandler(object):
                 return quadrant.quadrant_name
 
         return unknown_quad_name
+

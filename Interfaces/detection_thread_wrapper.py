@@ -35,7 +35,6 @@ class RecognitionThreadWrapper(object):
 
         self.config_hash = self.hash_file(self.CONFIG_PATH)
         self.quadrant_handler = QuadrantHandler()
-        self.quadrant_list = self.quadrant_handler.read_quadrants_from_config()
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -70,17 +69,8 @@ class RecognitionThreadWrapper(object):
         Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
-
-        # Setup all input / output directories. Intermediary directories will be created by the
-        # unified module as needed.
-        if not os.path.exists(self.photo_queue_dir):
-            os.makedirs(self.photo_queue_dir)
-
-        if not os.path.exists(self.photo_output_dir):
-            os.makedirs(self.photo_output_dir)
-
-        if not os.path.exists(self.final_report_output_dir):
-            os.makedirs(self.final_report_output_dir)
+        self.quadrant_handler.read_quadrants_from_config()
+        self.create_general_directories()
 
         # Begin the main loop of check, recognize, report.
         thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
@@ -92,9 +82,6 @@ class RecognitionThreadWrapper(object):
         Never ending function that will constantly poll for new images, run recognition, and spit out results.
         """
         # Run ALL THE TIME!!!!
-        quadrant_handler = QuadrantHandler()
-        config_hash = self.hash_file(self.CONFIG_PATH)
-
         while True:
             # Add any new photos in the directory to the queue
             self.check_and_update_queue()
@@ -141,7 +128,9 @@ class RecognitionThreadWrapper(object):
         new_hash = self.hash_file(self.CONFIG_PATH)
 
         if not new_hash == self.config_hash:
-            self.quadrant_list = self.quadrant_handler.read_quadrants_from_config()
+            self.quadrant_handler.read_quadrants_from_config()
+            self.create_quadrant_directories()
+
             self.config_hash = new_hash
 
     def determine_photo_quadrant(self, photo_path):
@@ -152,6 +141,40 @@ class RecognitionThreadWrapper(object):
 
         return photo_quadrant_name
 
+    def create_general_directories(self):
+        # Setup all input / output directories. Intermediary directories will be created by the
+        # unified module as needed.
+        if not os.path.exists(self.photo_queue_dir):
+            os.makedirs(self.photo_queue_dir)
+
+        if not os.path.exists(self.photo_output_dir):
+            os.makedirs(self.photo_output_dir)
+
+        if not os.path.exists(self.final_report_output_dir):
+            os.makedirs(self.final_report_output_dir)
+
+        if self.quadrant_handler.quadrant_list:
+            self.create_quadrant_directories()
+
+    def create_quadrant_directories(self):
+
+        for quadrant in self.quadrant_handler.quadrant_list:
+            quadrant_report_path = os.path.join(self.final_report_output_dir, quadrant.quadrant_name)
+            quadrant_photo_path = os.path.join(self.photo_output_dir, quadrant.quadrant_name)
+
+            if not os.path.exists(quadrant_report_path):
+                os.makedirs(quadrant_report_path)
+            if not os.path.exists(quadrant_photo_path):
+                os.makedirs(quadrant_photo_path)
+
+        unknown_quadrant_report_path = os.path.join(self.final_report_output_dir, "Unknown Quadrant")
+        unknown_quadrant_photo_path = os.path.join(self.photo_output_dir, "Unknown Quadrant")
+
+        if not os.path.exists(unknown_quadrant_report_path):
+            os.makedirs(unknown_quadrant_report_path)
+        if not os.path.exists(unknown_quadrant_photo_path):
+            os.makedirs(unknown_quadrant_photo_path)
+
     # Thanks to https://www.pythoncentral.io/hashing-files-with-python/
     @staticmethod
     def hash_file(file_path):
@@ -160,6 +183,7 @@ class RecognitionThreadWrapper(object):
             buf = afile.read()
             hasher.update(buf)
         return hasher.hexdigest()
+
 
 if __name__ == "__main__":
     testModule = RecognitionThreadWrapper()
