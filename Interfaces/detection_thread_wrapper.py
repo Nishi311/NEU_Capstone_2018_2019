@@ -6,6 +6,11 @@ import shutil
 
 from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
+from Interfaces.quadrant_handling.quadrant_object import Quadrant
+from Interfaces.quadrant_handling.quadrant_handler import QuadrantHandler
+from Interfaces.quadrant_handling.gps_handler import GPSHandler
+
+import hashlib
 
 class RecognitionThreadWrapper(object):
 
@@ -13,6 +18,10 @@ class RecognitionThreadWrapper(object):
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
     GENERAL_IO_ABS_PATH = os.path.join(THIS_FILE_PATH, GENERAL_IO_RELATIVE_DIR)
+
+    CONFIG_FILE_NAME = "quadrant_config.txt"
+    CONFIG_DIR = os.path.join(THIS_FILE_PATH, "configs")
+    CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)
 
     def __init__(self):
         self.photo_queue_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "queued_photos")
@@ -23,6 +32,10 @@ class RecognitionThreadWrapper(object):
         self.output_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "output")
         self.photo_output_dir = os.path.join(self.output_dir, "finished_photos")
         self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
+
+        self.config_hash = self.hash_file(self.CONFIG_PATH)
+        self.quadrant_handler = QuadrantHandler()
+        self.quadrant_list = self.quadrant_handler.read_quadrants_from_config()
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -79,6 +92,9 @@ class RecognitionThreadWrapper(object):
         Never ending function that will constantly poll for new images, run recognition, and spit out results.
         """
         # Run ALL THE TIME!!!!
+        quadrant_handler = QuadrantHandler()
+        config_hash = self.hash_file(self.CONFIG_PATH)
+
         while True:
             # Add any new photos in the directory to the queue
             self.check_and_update_queue()
@@ -86,14 +102,23 @@ class RecognitionThreadWrapper(object):
             # If the queue is populated, run recognition workflow on top of the queue
             if self.queue_of_photos:
                 # Pop top of the queue off for recognition
+                self.check_and_update_quadrants()
                 current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
+
+                photo_quadrant = self.determine_photo_quadrant(current_photo)
 
                 # Run recognition workflow
                 self.unified_module.input_filepath = current_photo
+                self.unified_module.final_reports_sub_dir = os.path.join(self.unified_module.final_reports_dir,
+                                                                         photo_quadrant)
                 self.unified_module.run_module()
 
                 # Move finished photo out of the queue directory and into the finished directory
-                shutil.move(current_photo, self.photo_output_dir)
+                quadrant_photo_output_dir = os.path.join(self.photo_output_dir, photo_quadrant)
+                if not os.path.exists(quadrant_photo_output_dir):
+                    os.makedirs(quadrant_photo_output_dir)
+
+                shutil.move(current_photo, quadrant_photo_output_dir)
 
             # Otherwise, wait a second and see if anything new comes up.
             else:
@@ -112,6 +137,29 @@ class RecognitionThreadWrapper(object):
         # Update the queue
         self.queue_of_photos += new_entries
 
+    def check_and_update_quadrants(self):
+        new_hash = self.hash_file(self.CONFIG_PATH)
+
+        if not new_hash == self.config_hash:
+            self.quadrant_list = self.quadrant_handler.read_quadrants_from_config()
+            self.config_hash = new_hash
+
+    def determine_photo_quadrant(self, photo_path):
+        photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)
+
+        photo_quadrant_name = self.quadrant_handler.determine_quadrant_from_coords(photo_lat_dd, photo_long_dd,
+                                                                                   photo_alt_m)
+
+        return photo_quadrant_name
+
+    # Thanks to https://www.pythoncentral.io/hashing-files-with-python/
+    @staticmethod
+    def hash_file(file_path):
+        hasher = hashlib.md5()
+        with open(file_path, 'rb') as afile:
+            buf = afile.read()
+            hasher.update(buf)
+        return hasher.hexdigest()
 
 if __name__ == "__main__":
     testModule = RecognitionThreadWrapper()

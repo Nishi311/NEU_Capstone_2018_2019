@@ -41,12 +41,12 @@ class Quadrant(object):
 
         self.quadrant_name = name_string.replace(' ', '')
 
-        self.coord_dict["left_latitude_DD"] = left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0]
-        self.coord_dict["left_longitude_DD"] = left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1]
-        self.coord_dict["right_latitude_DD"] = right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0]
-        self.coord_dict["right_longitude_DD"] = right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1]
-        self.coord_dict["top_altitude_Meters"] = top_limit.replace(' ', '')
-        self.coord_dict["bottom_altitude_Meters"] = bottom_limit.replace(' ', '')
+        self.coord_dict["left_latitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
+        self.coord_dict["left_longitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1])
+        self.coord_dict["right_latitude_DD"] = float(right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
+        self.coord_dict["right_longitude_DD"] = float(right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1])
+        self.coord_dict["top_altitude_Meters"] = float(top_limit.replace(' ', ''))
+        self.coord_dict["bottom_altitude_Meters"] = float(bottom_limit.replace(' ', ''))
 
     def generate_string(self):
         output_string = "Quadrant Name: {0}\nLeft_Limit (DD): ({1}, {2})\nRight_Limit (DD): ({3}, {4})\nTop_Limit (m): " \
@@ -59,29 +59,23 @@ class Quadrant(object):
                                                                 self.coord_dict["bottom_altitude_Meters"])
         return output_string
 
-    def check_coordinates(self, coordinate_list):
+    def check_coordinates(self, lat, long, alt):
         """
         Checks to see if a given coordinate string is within the bounds of this quadrant.
-        :param coordinate_list: (list) -> MUST be in the format [[latitude (DD)], [longitude (DD)], [altitude (m)]]
+        :param lat: The latitude of the coordinate to check in Decimal Degree format.
+        :param long: The longitude of the coordinate to check in Decimal Degree format.
+        :param alt: The altitude of the coordinate to check in meters.
         :return: (bool) -> True: The coordinate string IS within the bounds of this quadrant
                            False: The coordinate string is NOT within the bounds of this quadrant
         """
-        if isinstance(coordinate_list, list):
-            if len(coordinate_list) == 3:
-                given_lat_coord_dd = coordinate_list[0]
-                given_long_coord_dd = coordinate_list[1]
-                given_alt_meters = coordinate_list[2]
 
-                if not self.range_check(self.coord_dict["left_latitude_DD"], self.coord_dict["left_longitude_DD"],
-                                        given_lat_coord_dd):
-                    return False
-                if not self.range_check(self.coord_dict["right_latitude_DD"], self.coord_dict["right_longitude_DD"],
-                                        given_long_coord_dd):
-                    return False
-                if not self.range_check(self.coord_dict["top_altitude_Meters"], self.coord_dict["bottom_altitude_Meters"],
-                                        given_alt_meters):
-                    return True
-                return True
+        if not self.range_check(self.coord_dict["left_latitude_DD"], self.coord_dict["left_longitude_DD"], lat):
+            return False
+        if not self.range_check(self.coord_dict["right_latitude_DD"], self.coord_dict["right_longitude_DD"], long):
+            return False
+        if not self.range_check(self.coord_dict["top_altitude_Meters"], self.coord_dict["bottom_altitude_Meters"], alt):
+            return False
+        return True
 
     @staticmethod
     def range_check(left_coord, right_coord, checking_coord):

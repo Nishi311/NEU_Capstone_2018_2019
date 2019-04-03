@@ -2,10 +2,7 @@ import exifread
 
 # NOTE: NOT MINE. Based HEAVILY on:  https://gist.github.com/snakeye/fdc372dbf11370fe29eb
 
-class GPSHelper(object):
-
-    def __init__(self):
-        pass
+class GPSHandler(object):
 
     def run_module(self, file_path):
         lat, long, altitude = self.get_exif_location(self.get_exif_data(file_path))

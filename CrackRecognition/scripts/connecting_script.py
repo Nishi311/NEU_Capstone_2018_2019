@@ -59,7 +59,7 @@ class UnifiedRecognitionModule(object):
         self.pre_wipe_output_dir = True
         self.breakdown_reports_dir = self.DEFAULT_INTER_REPORT_FILEPATH
         self.final_reports_dir = self.DEFAULT_FINAL_REPORT_FILEPATH
-
+        self.final_reports_sub_dir = self.final_reports_dir
         # Variables related to image recognition
         self.percentage_threshold = 0.3
         self.graph_filepath = self.DEFAULT_GRAPH_FILEPATH
@@ -82,8 +82,8 @@ class UnifiedRecognitionModule(object):
             self.parse_args(args)
 
         # create the breakdown and final report directories if they don't already exist.
-        if not os.path.exists(self.final_reports_dir):
-            os.makedirs(self.final_reports_dir)
+        if not os.path.exists(self.final_reports_sub_dir):
+            os.makedirs(self.final_reports_sub_dir)
 
         # Recognition module will only use one graph throughout its lifecycle.
         # set those parameters here. Will update individual files as needed.
@@ -209,11 +209,11 @@ class UnifiedRecognitionModule(object):
 
             # Run breakdown and breakdown report parsing workflow.
             self.breakdown_and_recognize_image(photo_file_path, photo_report_filepath,
-                                               self.final_reports_dir)
+                                               self.final_reports_sub_dir)
         else:
             # If NOT doing breakdown, then just set the recognition module's input / output and run.
             self.recognition_module.input_filepath = self.input_filepath
-            self.recognition_module.report_location = self.final_reports_dir
+            self.recognition_module.report_location = self.final_reports_sub_dir
             self.recognition_module.run_module()
 
     def breakdown_and_recognize_image(self, photo_path, breakdown_report_path, final_report_path):

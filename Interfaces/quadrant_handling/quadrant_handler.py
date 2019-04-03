@@ -6,37 +6,35 @@ from .quadrant_object import Quadrant
 class QuadrantHandler(object):
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+    CONFIG_FILE_NAME = "quadrant_config.txt"
+    CONFIG_DIR = os.path.join(THIS_FILE_PATH, "..", "configs")
+    CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)
 
     def __init__(self):
-        self.config_file_name = "quadrant_config.txt"
-        self.config_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs")
-        self.config_path = os.path.join(self.config_dir, self.config_file_name)
-
-    def get_quadrant_config_path(self):
-        return self.config_path
+        self.quadrant_list = []
 
     def write_quadrants_to_config(self, raw_js_string):
-        if not os.path.exists(self.config_dir):
-            os.makedirs(self.config_dir)
+        if not os.path.exists(self.CONFIG_DIR):
+            os.makedirs(self.CONFIG_DIR)
 
-        quadrant_list = self.parse_raw_js_input(raw_js_string)
+        self.quadrant_list = self.parse_raw_js_input(raw_js_string)
 
-        with open(self.config_path, "w") as config_file:
-            for quadrant in quadrant_list:
+        with open(self.CONFIG_PATH, "w") as config_file:
+            for quadrant in self.quadrant_list:
                 config_file.write(quadrant.generate_string())
 
     def read_quadrants_from_config(self):
-        if not os.path.exists(self.config_path):
+        if not os.path.exists(self.CONFIG_PATH):
             print("quadrant_handler, read_quadrants_from_config(): ERROR. Could not find quadrant config file "
-                  "{0}".format(self.config_path))
+                  "{0}".format(self.CONFIG_PATH))
             return False
 
         try:
-            with open(self.config_path, "r") as config_file:
+            with open(self.CONFIG_PATH, "r") as config_file:
                 raw_config_string = config_file.readlines()
         except IOError as e:
             print("Quadrant_handler, read_quadrants_from_config(): Could not read from config file {0}. Returned "
-                  "Error {1}".format(self.config_path, e))
+                  "Error {1}".format(self.CONFIG_PATH, e))
             return False
 
         return self.parse_raw_config_input(raw_config_string)
@@ -88,4 +86,13 @@ class QuadrantHandler(object):
             new_quad_object.parse_config_string(refined_quad_string)
             quadrant_objects.append(new_quad_object)
 
-        return quadrant_objects
+        self.quadrant_list = quadrant_objects
+
+    def determine_quadrant_from_coords(self, lat, long, alt):
+        unknown_quad_name = "Unknown Quadrant"
+
+        for quadrant in self.quadrant_list:
+            if quadrant.check_coordinates(lat, long, alt):
+                return quadrant.quadrant_name
+
+        return unknown_quad_name
