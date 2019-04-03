@@ -6,18 +6,20 @@ var output_report_directory = output_directory + "/finished_reports"
 var selected_quadrant = "No Quadrant Chosen"
 function update_dynamic_table()
 {
-    $.get("/get_images",function(returned_data){
-        var table = '<table><tr><th><b>Image</b></th><th><b>Status</b></th><th><b>Quadrant</b></th></tr>';
+    $.get("/get_all_image_data",function(returned_data){
+        var table = '<table><tr><th><b>Image</b></th><th><b>Status</b></th><th><b>GPS Coordinates</b></th></tr>';
         if (returned_data !== "No Images"){
             for (var i = 0, len = returned_data.length; i < len; ++i) {
-                var image_string = returned_data[i]
-                var image_path = "/" + image_string.split(": ")[0].replace('\\', '/')
-                var info_bundle = image_string.split(": ")[1]
-                var image_quadrant = info_bundle.split(",")[0]
-                var success_value = info_bundle.split(",")[1]
+                var image_result_string = returned_data[i]
+                var arrayed_results = image_result_string.split("|")
+
+                var image_path = "/" + arrayed_results[0].replace('\\', '/')
                 var photo_path = output_photo_directory + image_path
 
-                table +='<tr><th><center><img src="' + photo_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center><th>' + success_value + '</th><th>' + image_quadrant + '</th></tr>';
+                var coordinate_bundle = arrayed_results[1]
+                var success_value = arrayed_results[3]
+
+                table +='<tr><th><center><img src="' + photo_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center><th>' + success_value + '</th><th>' + coordinate_bundle + '</th></tr>';
             }
             table += selected_quadrant + '<br>';
 

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from CrackRecognition.scripts.image_breakdown import ImageBreakdownModule
 from CrackRecognition.scripts.recognition_script import RecognitionModule
-
+from Interfaces.quadrant_handling.gps_handler import GPSHandler
 
 class UnifiedRecognitionModule(object):
 
@@ -245,7 +245,9 @@ class UnifiedRecognitionModule(object):
             # Run recognition and generate the report for the sub-image
             self.recognition_module.run_module()
         # parse the resulting sub-reports into one single report for the image.
-        self.sub_report_parser(breakdown_report_path, final_report_path)
+        image_lat, image_long, image_alt = GPSHandler().run_module(photo_path)
+
+        self.sub_report_parser(breakdown_report_path, final_report_path, image_lat, image_long, image_alt)
 
     def setup_image_breakdown_arguments(self, input_filepath):
         """
@@ -305,13 +307,18 @@ class UnifiedRecognitionModule(object):
 
         return recog_arg_namespace
 
-    def sub_report_parser(self, breakdown_report_dir, final_report_dir):
+    def sub_report_parser(self, breakdown_report_dir, final_report_dir, image_lat, image_long, image_alt):
         """
         Parses all the sub-reports found in the given directory into a single, fairly high level
         overview of what the image is like in terms of positive and negative detection. Final report
         will be output to the same directory.
-        :param sub_report_dir: The directory that needs to be parsed.
+        :param breakdown_report_dir: The directory that needs to be parsed.
+        :param final_report_dir: The location where the final report will be placed
+        :param image_lat: The latitude (in Decimal Degree) where the photo was taken
+        :param image_long: the longitude (in Decimal Degree) where the photo was taken
+        :param image_alt: the altitude (in Decimal Degree) where the photo was taken
         """
+
         if os.path.exists(breakdown_report_dir):
             list_of_reports = glob.glob(os.path.join(breakdown_report_dir, "*"))
 
@@ -342,6 +349,8 @@ class UnifiedRecognitionModule(object):
 
             final_report_file = open(os.path.join(final_report_dir, report_name + "_final_report.txt"), "w+")
             final_report_file.write("Name: {0}\n".format(report_name))
+            final_report_file.write("Coordinates(Lat, Long, Alt): ({0}, {1}, {2})\n".format(image_lat, image_long,
+                                                                                            image_alt))
 
             if positive_report_list:
                 final_report_file.write("Crack Detected: Positive\n")

@@ -1,7 +1,7 @@
 import exifread
 
-# NOTE: NOT MINE. Based HEAVILY on:  https://gist.github.com/snakeye/fdc372dbf11370fe29eb
 
+# NOTE: NOT MINE. Based HEAVILY on:  https://gist.github.com/snakeye/fdc372dbf11370fe29eb
 class GPSHandler(object):
 
     def run_module(self, file_path):
