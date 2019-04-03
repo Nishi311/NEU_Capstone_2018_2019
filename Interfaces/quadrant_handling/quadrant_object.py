@@ -69,9 +69,9 @@ class Quadrant(object):
                            False: The coordinate string is NOT within the bounds of this quadrant
         """
 
-        if not self.range_check(self.coord_dict["left_latitude_DD"], self.coord_dict["left_longitude_DD"], lat):
+        if not self.range_check(self.coord_dict["left_latitude_DD"], self.coord_dict["right_latitude_DD"], lat):
             return False
-        if not self.range_check(self.coord_dict["right_latitude_DD"], self.coord_dict["right_longitude_DD"], long):
+        if not self.range_check(self.coord_dict["left_longitude_DD"], self.coord_dict["right_longitude_DD"], long):
             return False
         if not self.range_check(self.coord_dict["top_altitude_Meters"], self.coord_dict["bottom_altitude_Meters"], alt):
             return False
