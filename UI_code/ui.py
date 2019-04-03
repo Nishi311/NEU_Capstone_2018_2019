@@ -10,6 +10,7 @@ import os
 
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
 quadrant = "quadrant_2"
 
 # Main menu
@@ -83,7 +84,7 @@ def camera_manual_control():
 
 @app.route('/count_quadrants', methods=['GET', 'POST'])
 def retrieve_available_quadrants():
-    path = os.path.join(THIS_FILE_DIR_PATH,"static", "images")
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_reports")
     try:
         for root, dirs, files in os.walk(path):
             print(dirs)
@@ -111,16 +112,33 @@ def select_new_quadrant():
 def get_images():
     global quadrant
 
-    path = os.path.join(THIS_FILE_DIR_PATH,"static", "images", quadrant)
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", quadrant)
     print(path)
+    image_list = []
     try:
-        for root, dirs, files in os.walk(path):
-            print(files)
+        for throw_away_root, throw_away_dirs, image_list in os.walk(path):
+            print(image_list)
             break
-        files = [f for f in files if not f[0] == '.']
-        files = ['/' + quadrant + '/' + f for f in files]
-        return jsonify(files)
+        if image_list:
+            return_list = []
+            for image_name in image_list:
+                image_path_quadrant_rel = os.path.join(quadrant, image_name)
+                file_name_no_ext = os.path.splitext(image_name)[0]
 
+                report_name = file_name_no_ext + "_final_report.txt"
+                full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", quadrant, report_name)
+
+                with open(full_report_path) as report:
+                    throw_away_name_line = report.readline()
+                    success_line = report.readline()
+                    success_value = success_line.split("Crack Detected: ")[1].replace('\n', '')
+
+                final_file_return_string = image_path_quadrant_rel + ": {0},{1}".format(quadrant, success_value)
+                return_list.append(final_file_return_string)
+            # file_list = [f for f in file_list if not f[0] == '.']
+            # file_list = ['/' + quadrant + '/' + f for f in file_list]
+            return jsonify(return_list)
+        return jsonify("No Images")
     except Exception as e:
         print(e)
 
@@ -132,6 +150,32 @@ def update_quadrant_config():
 
     return "And Hello to you too"
 
+@app.route('/get_all_image_results', methods=['POST'])
+def get_all_image_results():
+    test = request
+    partial_image_paths = request.form['partial_image_paths']
+    # partial_image_paths = request.args.get('partial_image_paths')
+    # TODO: parse partial image paths properly.
+    results = []
+    for image_path in partial_image_paths:
+        quadrant_name, image_name = os.path.split(image_path)
+
+        quadrant_name = quadrant_name.replace('/', '')
+        image_name_no_ext = os.path.splitext(image_name)[0]
+        report_name = image_name_no_ext + "_final_report.txt"
+
+        full_image_path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", image_path)
+
+        full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", quadrant_name, report_name)
+        with open(full_report_path) as report:
+            name_line = report.readline()
+            success_line = report.readline()
+
+        success_value = success_line.split("Crack Detected: ")[1].replace('\n', '')
+
+
+        results += [image_path, quadrant_name, success_value]
+    return jsonify(results)
 
 # Opens the program to the main menu.
 def main():
