@@ -168,10 +168,10 @@ $(document).on("click", "#update_grid", function() {
                 quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
             else if ($('#'.concat(str)) === str) {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
+                quadrant_grid +='<div class="grid-item examined" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
             else {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
+                quadrant_grid +='<div class="grid-item" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
             }
 
             quad_num -= 1;
