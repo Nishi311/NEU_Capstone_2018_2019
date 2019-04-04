@@ -33,7 +33,8 @@ class RecognitionThreadWrapper(object):
         self.photo_output_dir = os.path.join(self.output_dir, "finished_photos")
         self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
 
-        self.config_hash = self.hash_file(self.CONFIG_PATH)
+        if os.path.exists(self.CONFIG_PATH):
+            self.config_hash = self.hash_file(self.CONFIG_PATH)
         self.quadrant_handler = QuadrantHandler()
 
         # List of photos that currently need to be processed
