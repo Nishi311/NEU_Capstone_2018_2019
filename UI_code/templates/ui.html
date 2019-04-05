@@ -207,7 +207,7 @@
             display: inline-block;
         }
 
-        .dropdown-content {
+        .quad_dropdown_content {
             display: none;
             position: absolute;
             background-color: white;
@@ -216,15 +216,36 @@
             z-index: 1;
         }
 
-        .dropdown-content a {
+        .quad_dropdown_content a {
             color: black;
             padding: 12px 16px;
             text-decoration: none;
             display: block;
         }
-        .dropdown-content a:hover {background-color: lightgrey}
+        .quad_dropdown_content a:hover {background-color: lightgrey}
 
-        .dropdown:hover .dropdown-content {
+         .dropdown:hover .quad_dropdown_content {
+            display: block;
+        }
+
+        .side_dropdown_content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .side_dropdown_content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .side_dropdown_content a:hover {background-color: lightgrey}
+
+        .dropdown:hover .side_dropdown_content {
             display: block;
         }
 
@@ -246,8 +267,6 @@
             align-items: center;
             font-size: 10px;
             overflow-y: auto;
-
-
         }
 
         .grid-item:hover {
@@ -287,13 +306,18 @@
         <div class="image_database">
             <center><h2>Quadrant Currently Under Examination</h2></center>
             <div class="image_table">
-                <center>
+                 <center>
                     <div class="dropdown">
-                        <button class="dropbtn">Choose New Quadrant</button>
-                        <div class="dropdown-content">
+                        <button class="dropbtn">Choose New Side</button>
+                        <div class="side_dropdown_content" id="side_dropdown_content">
                         </div>
                     </div>
-                </center>
+                    <div class="dropdown">
+                        <button class="dropbtn">Choose New Quadrant</button>
+                        <div class="quad_dropdown_content" id="quad_dropdown_content">
+                        </div>
+                    </div>
+                 </center>
                 <div class="display_table">
                     <center>
                         <font size="2.5">

@@ -11,7 +11,8 @@ import os
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
-quadrant = "quadrant_2"
+side = "Unknown Side"
+quadrant = "Unknown Quadrant"
 
 # Main menu
 @app.route('/')
@@ -82,26 +83,63 @@ def camera_manual_control():
     return jsonify("failure")
 
 
-@app.route('/count_quadrants', methods=['GET', 'POST'])
-def retrieve_available_quadrants():
+@app.route('/count_sides', methods=['GET', 'POST'])
+def count_sides():
     path = os.path.join(OUTPUT_DIRECTORY, "finished_reports")
-    try:
-        for root, dirs, files in os.walk(path):
-            print(dirs)
-            return jsonify(dirs)
 
-            break
-    except Exception as e:
-        print(e)
+    if os.path.exists(path):
+        try:
+            for root, dirs, files in os.walk(path):
+                if dirs:
+                    print(dirs)
+                    return jsonify(dirs)
+                else:
+                    return jsonify("No sides found")
+        except Exception as e:
+            return jsonify("No sides found")
+    else:
+        return jsonify("No sides found")
 
+
+@app.route('/count_quadrants', methods=['GET', 'POST'])
+def count_quadrants():
+    global side
+
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", side)
+
+    if os.path.exists(path):
+        try:
+            for root, dirs, files in os.walk(path):
+                if dirs:
+                    print(dirs)
+                    return jsonify(dirs)
+                else:
+                    return jsonify("No quadrants found")
+        except Exception as e:
+            return jsonify("No quadrants found")
+    else:
+        return jsonify("No quadrants found")
 
 @app.route('/select_new_quadrant', methods=['GET', 'POST'])
 def select_new_quadrant():
     global quadrant
 
     if request.method == 'POST':
-        quadrant = request.form['quadrant']
-        print(quadrant)
+        if request.form['quadrant'] != "No Quadrants Found":
+            quadrant = request.form['quadrant']
+            print(quadrant)
+        return jsonify("success")
+
+    return jsonify("nothing changed")
+
+@app.route('/select_new_side', methods=['GET', 'POST'])
+def select_new_side():
+    global side
+
+    if request.method == 'POST':
+        if request.form['side'] != "No Sides Found":
+            side = request.form['side']
+            print(side)
         return jsonify("success")
 
     return jsonify("nothing changed")
@@ -110,8 +148,9 @@ def select_new_quadrant():
 @app.route('/get_all_image_data', methods=['GET', 'POST'])
 def get_all_image_data():
     global quadrant
+    global side
 
-    path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", quadrant)
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", side, quadrant)
     print(path)
     image_list = []
     try:
@@ -121,11 +160,11 @@ def get_all_image_data():
         if image_list:
             return_list = []
             for image_name in image_list:
-                image_path_quadrant_rel = os.path.join(quadrant, image_name)
+                image_path_quadrant_rel = os.path.join(side, quadrant, image_name)
                 file_name_no_ext = os.path.splitext(image_name)[0]
 
                 report_name = file_name_no_ext + "_final_report.txt"
-                full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", quadrant, report_name)
+                full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", side, quadrant, report_name)
 
                 with open(full_report_path) as report:
                     throw_away_name_line = report.readline()

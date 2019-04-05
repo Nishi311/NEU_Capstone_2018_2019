@@ -1,9 +1,13 @@
 setInterval("update_dynamic_table();",1000);
-setInterval("update_dynamic_quadrants();",1000);
+//setInterval("update_dynamic_quadrants();",1000);
+setInterval("update_dynamic_sides_and_quadrants();", 1000);
+
 var output_directory = "static/generalIO/output"
 var output_photo_directory = output_directory + "/finished_photos"
 var output_report_directory = output_directory + "/finished_reports"
+var selected_side = "No Side Chosen"
 var selected_quadrant = "No Quadrant Chosen"
+
 function update_dynamic_table()
 {
     $.get("/get_all_image_data",function(returned_data){
@@ -45,15 +49,33 @@ function retrieve_image_info(partial_image_path){
 
 }
 
-function update_dynamic_quadrants()
+function update_dynamic_sides_and_quadrants()
 {
-    $.get("/count_quadrants",function(data){
+    $.get("/count_sides",function(data){
         var dropdown = '';
-        for (var i = 0, len = data.length; i < len; ++i) {
-            dropdown +='<a href="#">' + data[i] + '</a>';
+        if (data != "No sides found"){
+            for (var i = 0, len = data.length; i < len; ++i) {
+                dropdown += '<a href="#" onclick=\"select_new_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
+            }
+        } else{
+             dropdown +='<a href="#">No Sides Found</a>';
         }
         //alert( "Data Loaded: " + table);
-        $("div.dropdown-content").html(dropdown);
+        $("div.side_dropdown_content").html(dropdown);
+    });
+
+    $.get("/count_quadrants",function(data){
+        var dropdown = '';
+        if (data != "No quadrants found"){
+            for (var i = 0, len = data.length; i < len; ++i) {
+                dropdown +='<a href="#" onclick=\'select_new_quad(' + data[i] + ');\'>' + data[i] + '</a>';
+            }
+        } else{
+            var no_quad_string = 'No Quadrants Found';
+            dropdown += '<a href="#" onclick=\"select_new_quad(\'' + no_quad_string + '\');\">' + no_quad_string + '</a>';
+        }
+        //alert( "Data Loaded: " + table);
+        $("div.quad_dropdown_content").html(dropdown);
     });
 }
 
@@ -71,14 +93,10 @@ $(document).on("mouseenter", "tr", function() {
     }
 });
 
-$(document).on("click", "a", function() {
-    var value = $(this).html();
-    selected_quadrant = value;
+function select_new_quad(new_quad){
+    $.post("/select_new_quadrant",{quadrant:new_quad});
+}
 
-    $.post("/select_new_quadrant",
-    {
-        quadrant: value
-    });
-
-});
-//
+function select_new_side(new_side){
+    $.post("/select_new_side",{side:new_side});
+}
