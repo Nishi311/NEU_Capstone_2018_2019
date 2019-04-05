@@ -1,10 +1,5 @@
-setInterval("update_dynamic_quadrants_progress();",1000);
 
-$(document).on("click", "#update_grid", function() {
-
-
-    //TODO: Need a better way to establish 3 coordinate system. Having one degree locked means can only scan
-    //on a strictly N/S or E/W basis.
+$(document).on("click", "#add_side", function() {
 
     // Length of a grid in METERS
     var quad_side_meters = parseFloat($("#quadrant_side_size").val());
@@ -194,40 +189,15 @@ $(document).on("click", "#update_grid", function() {
 
     $.post("/update_quadrant_config", {grid_data: quadrant_grid});
 
+
+    document.getElementById("right_lat").value = "0";
+    document.getElementById("right_long").value = "0";
+    document.getElementById("left_lat").value = "0";
+    document.getElementById("left_long").value = "0";
+    document.getElementById("top_alt").value = "0";
+    document.getElementById("bottom_alt").value = "0";
+
 });
-
-
-$(document).on("click", "div.grid-item", function() {
-
-    var quadrant_name = $(this).attr("id");
-
-    var lat_limit_left = $(this).attr("lat_limit_left");
-    var long_limit_left = $(this).attr("long_limit_left");
-
-    var lat_limit_right = $(this).attr("lat_limit_right");
-    var long_limit_right = $(this).attr("long_limit_right");
-
-    var top_limit = $(this).attr("top_limit");
-    var bottom_limit = $(this).attr("bottom_limit");
-
-    var str = quadrant_name + "\n\n"
-    str += "Decimal Degree Format: (Latitude, Longitude, Altitude)\n\n"
-    str += "Top Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + top_limit + ")\n";
-    str += "Top Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + top_limit + ")\n";
-    str += "Bottom Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + bottom_limit + ")\n";
-    str += "Bottom Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + bottom_limit + ")\n";
-
-    alert(str);
-});
-
-function update_dynamic_quadrants_progress()
-{
-    var total = $("div.grid-wrapper").attr("data-total-number");
-    var num = $("div.grid-wrapper").attr("data-complete");
-
-    $("#myBar").css( "width", ((num/total)*100));
-    $("#myBar").text("".concat((num/total)*100).concat("% Completed"));
-}
 
 // Courtesy of https://www.geodatasource.com/developers/javascript
 // I don't actually know how this thing works.
@@ -254,5 +224,3 @@ function dd_lat_long_diff(lat1, lon1, lat2, lon2){
 		return dist;
 	}
 }
-
-
