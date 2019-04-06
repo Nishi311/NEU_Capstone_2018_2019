@@ -1,7 +1,13 @@
+import os
+
 
 class Quadrant(object):
+    THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
+
     def __init__(self):
-        self.quadrant_name = ""
+        self._quadrant_name = ""
+        self._side_name = ""
+
         self.coord_dict = {"left_latitude_DD": 0,
                            "left_longitude_DD": 0,
 
@@ -10,6 +16,40 @@ class Quadrant(object):
 
                            "top_altitude_Meters": 0,
                            "bottom_altitude_Meters": 0}
+
+        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                             "finished_photos", self.side_name, self.quadrant_name)
+
+        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                              "finished_reports", self.side_name, self.quadrant_name)
+
+    @property
+    def quadrant_name(self):
+        return self._quadrant_name
+
+    @quadrant_name.setter
+    def quadrant_name(self, new_quadrant_name):
+        self._quadrant_name = new_quadrant_name
+
+        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                             "finished_photos", self.side_name, self._quadrant_name)
+
+        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                              "finished_reports", self.side_name, self._quadrant_name)
+
+    @property
+    def side_name(self):
+        return self._side_name
+
+    @side_name.setter
+    def side_name(self, new_side_name):
+        self._side_name = new_side_name
+
+        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                             "finished_photos", self._side_name, self.quadrant_name)
+
+        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
+                                              "finished_reports", self._side_name, self.quadrant_name)
 
     def parse_js_string(self, js_string):
         """
@@ -76,6 +116,14 @@ class Quadrant(object):
         if not self.range_check(self.coord_dict["top_altitude_Meters"], self.coord_dict["bottom_altitude_Meters"], alt):
             return False
         return True
+
+    def create_output_directories(self):
+
+        if not os.path.exists(self.photo_output_dir):
+            os.makedirs(self.photo_output_dir)
+
+        if not os.path.exists(self.report_output_dir):
+            os.makedirs(self.report_output_dir)
 
     @staticmethod
     def range_check(left_coord, right_coord, checking_coord):

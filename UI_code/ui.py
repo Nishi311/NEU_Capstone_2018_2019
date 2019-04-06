@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 
 
 from Interfaces.detection_thread_wrapper import RecognitionThreadWrapper
-from Interfaces.quadrant_handling.quadrant_handler import QuadrantHandler
+from Interfaces.side_and_quadrant_handling.side_object import SideObject
 import webbrowser
 import time
 import os
@@ -83,8 +83,8 @@ def camera_manual_control():
     return jsonify("failure")
 
 
-@app.route('/count_sides', methods=['GET', 'POST'])
-def count_sides():
+@app.route('/get_sides_list', methods=['GET', 'POST'])
+def get_sides_list():
     path = os.path.join(OUTPUT_DIRECTORY, "finished_reports")
 
     if os.path.exists(path):
@@ -101,8 +101,8 @@ def count_sides():
         return jsonify("No sides found")
 
 
-@app.route('/count_quadrants', methods=['GET', 'POST'])
-def count_quadrants():
+@app.route('/get_quadrants_list', methods=['GET', 'POST'])
+def get_quadrants_list():
     global side
 
     path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", side)
@@ -120,6 +120,7 @@ def count_quadrants():
     else:
         return jsonify("No quadrants found")
 
+
 @app.route('/select_new_quadrant', methods=['GET', 'POST'])
 def select_new_quadrant():
     global quadrant
@@ -132,6 +133,7 @@ def select_new_quadrant():
 
     return jsonify("nothing changed")
 
+
 @app.route('/select_new_side', methods=['GET', 'POST'])
 def select_new_side():
     global side
@@ -143,6 +145,7 @@ def select_new_side():
         return jsonify("success")
 
     return jsonify("nothing changed")
+
 
 # Gets all images stored for a give quadrant
 @app.route('/get_all_image_data', methods=['GET', 'POST'])
@@ -182,11 +185,13 @@ def get_all_image_data():
     except Exception as e:
         print(e)
 
-@app.route('/update_quadrant_config', methods=['POST'])
-def update_quadrant_config():
+@app.route('/add_new_side', methods=['POST'])
+def add_new_side():
     js_data = request.form['grid_data']
-    quad_handler = QuadrantHandler()
-    quad_handler.write_quadrants_to_config(js_data)
+
+    new_side_name = "Side {0}".format(len(get_sides_list()))
+    side_object = SideObject(new_side_name)
+    side_object.write_quadrants_to_config(js_data)
 
     return "And Hello to you too"
 

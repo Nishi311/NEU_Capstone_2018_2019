@@ -51,7 +51,7 @@ function retrieve_image_info(partial_image_path){
 
 function update_dynamic_sides_and_quadrants()
 {
-    $.get("/count_sides",function(data){
+    $.get("/get_sides_list",function(data){
         var dropdown = '';
         if (data != "No sides found"){
             for (var i = 0, len = data.length; i < len; ++i) {
@@ -64,7 +64,7 @@ function update_dynamic_sides_and_quadrants()
         $("div.side_dropdown_content").html(dropdown);
     });
 
-    $.get("/count_quadrants",function(data){
+    $.get("/get_quadrants_list",function(data){
         var dropdown = '';
         if (data != "No quadrants found"){
             for (var i = 0, len = data.length; i < len; ++i) {

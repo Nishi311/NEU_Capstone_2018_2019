@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from CrackRecognition.scripts.image_breakdown import ImageBreakdownModule
 from CrackRecognition.scripts.recognition_script import RecognitionModule
-from Interfaces.quadrant_handling.gps_handler import GPSHandler
+from Interfaces.side_and_quadrant_handling.gps_handler import GPSHandler
 
 class UnifiedRecognitionModule(object):
 

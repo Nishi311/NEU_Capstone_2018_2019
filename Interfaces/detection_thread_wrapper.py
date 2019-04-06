@@ -6,9 +6,10 @@ import shutil
 
 from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
-from Interfaces.quadrant_handling.quadrant_object import Quadrant
-from Interfaces.quadrant_handling.quadrant_handler import QuadrantHandler
-from Interfaces.quadrant_handling.gps_handler import GPSHandler
+from Interfaces.side_and_quadrant_handling.quadrant_object import Quadrant
+from Interfaces.side_and_quadrant_handling.side_object import SideObject
+from Interfaces.side_and_quadrant_handling.gps_handler import GPSHandler
+from Interfaces.side_and_quadrant_handling.side_handler import SideHandler
 
 import hashlib
 
@@ -36,6 +37,7 @@ class RecognitionThreadWrapper(object):
         if os.path.exists(self.CONFIG_PATH):
             self.config_hash = self.hash_file(self.CONFIG_PATH)
         self.quadrant_handler = QuadrantHandler()
+        self.side_handler = SideHandler()
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -71,6 +73,8 @@ class RecognitionThreadWrapper(object):
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
         self.quadrant_handler.read_quadrants_from_config()
+        self.side_handler.read_sides_from_configs()
+        
         self.create_general_directories()
 
         # Begin the main loop of check, recognize, report.
@@ -93,16 +97,16 @@ class RecognitionThreadWrapper(object):
                 self.check_and_update_quadrants()
                 current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
 
-                photo_quadrant = self.determine_photo_quadrant(current_photo)
+                side_quad_path = self.determine_photo_quadrant(current_photo)
 
                 # Run recognition workflow
                 self.unified_module.input_filepath = current_photo
                 self.unified_module.final_reports_sub_dir = os.path.join(self.unified_module.final_reports_dir,
-                                                                         photo_quadrant)
+                                                                         side_quad_path)
                 self.unified_module.run_module()
 
                 # Move finished photo out of the queue directory and into the finished directory
-                quadrant_photo_output_dir = os.path.join(self.photo_output_dir, photo_quadrant)
+                quadrant_photo_output_dir = os.path.join(self.photo_output_dir, side_quad_path)
                 if not os.path.exists(quadrant_photo_output_dir):
                     os.makedirs(quadrant_photo_output_dir)
 
@@ -130,17 +134,17 @@ class RecognitionThreadWrapper(object):
 
         if not new_hash == self.config_hash:
             self.quadrant_handler.read_quadrants_from_config()
-            self.create_quadrant_directories()
+            self.side_handler.read_sides_from_configs()
+            self.side_handler.create_all_side_dirs()
 
             self.config_hash = new_hash
 
     def determine_photo_quadrant(self, photo_path):
         photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)
 
-        photo_quadrant_name = self.quadrant_handler.determine_quadrant_from_coords(photo_lat_dd, photo_long_dd,
-                                                                                   photo_alt_m)
+        side_quad_path = self.side_handler.determine_side_and_quadrant(photo_lat_dd, photo_long_dd, photo_alt_m)
 
-        return photo_quadrant_name
+        return side_quad_path
 
     def create_general_directories(self):
         # Setup all input / output directories. Intermediary directories will be created by the
@@ -153,28 +157,9 @@ class RecognitionThreadWrapper(object):
 
         if not os.path.exists(self.final_report_output_dir):
             os.makedirs(self.final_report_output_dir)
-
-        if self.quadrant_handler.quadrant_list:
-            self.create_quadrant_directories()
-
-    def create_quadrant_directories(self):
-
-        for quadrant in self.quadrant_handler.quadrant_list:
-            quadrant_report_path = os.path.join(self.final_report_output_dir, quadrant.quadrant_name)
-            quadrant_photo_path = os.path.join(self.photo_output_dir, quadrant.quadrant_name)
-
-            if not os.path.exists(quadrant_report_path):
-                os.makedirs(quadrant_report_path)
-            if not os.path.exists(quadrant_photo_path):
-                os.makedirs(quadrant_photo_path)
-
-        unknown_quadrant_report_path = os.path.join(self.final_report_output_dir, "Unknown Quadrant")
-        unknown_quadrant_photo_path = os.path.join(self.photo_output_dir, "Unknown Quadrant")
-
-        if not os.path.exists(unknown_quadrant_report_path):
-            os.makedirs(unknown_quadrant_report_path)
-        if not os.path.exists(unknown_quadrant_photo_path):
-            os.makedirs(unknown_quadrant_photo_path)
+        
+        if self.side_handler.side_list:
+            self.side_handler.create_all_side_dirs()
 
     # Thanks to https://www.pythoncentral.io/hashing-files-with-python/
     @staticmethod
