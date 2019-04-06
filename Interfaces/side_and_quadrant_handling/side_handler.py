@@ -1,4 +1,6 @@
 import os
+import hashlib
+
 from .side_object import SideObject
 
 
@@ -22,6 +24,8 @@ class SideHandler(object):
                 side_object = SideObject(dir_name)
                 side_object.read_quadrants_from_config()
                 self.side_list.append(side_object)
+
+            self.create_all_side_dirs()
 
     def determine_side_and_quadrant(self, photo_lat, photo_long, photo_alt):
 

@@ -104,5 +104,6 @@ function select_new_quad(new_quad){
 function select_new_side(new_side){
     $.post("/select_new_side",{side:new_side}, function(){
         selected_side = new_side
+        selected_quadrant = "No Quadrant Chosen";
     });
 }

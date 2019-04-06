@@ -6,12 +6,8 @@ import shutil
 
 from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
-from Interfaces.side_and_quadrant_handling.quadrant_object import Quadrant
-from Interfaces.side_and_quadrant_handling.side_object import SideObject
 from Interfaces.side_and_quadrant_handling.gps_handler import GPSHandler
 from Interfaces.side_and_quadrant_handling.side_handler import SideHandler
-
-import hashlib
 
 class RecognitionThreadWrapper(object):
 
@@ -22,7 +18,6 @@ class RecognitionThreadWrapper(object):
 
     CONFIG_FILE_NAME = "quadrant_config.txt"
     CONFIG_DIR = os.path.join(THIS_FILE_PATH, "configs")
-    CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)
 
     def __init__(self):
         self.photo_queue_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "queued_photos")
@@ -35,9 +30,14 @@ class RecognitionThreadWrapper(object):
         self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
 
         self.side_handler = SideHandler()
+        self.all_config_hashes = None
 
-        if os.listdir(self.CONFIG_DIR):
-            self.all_config_hashes = self.side_handler.get_side_hashes
+        # TODO: Re-enable when hash uppdate is done.
+        # if os.path.exists(self.CONFIG_DIR):
+        #     if os.listdir(self.CONFIG_DIR):
+        #         self.all_config_hashes = self.side_handler.get_side_hashes()
+        # else:
+        #     os.makedirs(self.CONFIG_DIR)
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -72,9 +72,11 @@ class RecognitionThreadWrapper(object):
         Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
+        self.wipe_previous_directories()
+
         self.side_handler.read_sides_from_configs()
-        
         self.create_general_directories()
+
 
         # Begin the main loop of check, recognize, report.
         thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
@@ -89,6 +91,7 @@ class RecognitionThreadWrapper(object):
         while True:
             # Add any new photos in the directory to the queue
             self.check_and_update_queue()
+            self.check_and_update_quadrants()
 
             # If the queue is populated, run recognition workflow on top of the queue
             if self.queue_of_photos:
@@ -96,9 +99,6 @@ class RecognitionThreadWrapper(object):
                 current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
                 side_name, quad_name = self.determine_photo_side_and_quad(current_photo)
                 side_quad_path = os.path.join(side_name, quad_name)
-
-                if side_name != "Unknown Side":
-                    self.check_and_update_quadrants(side_name)
 
                 # Run recognition workflow
                 self.unified_module.input_filepath = current_photo
@@ -131,16 +131,16 @@ class RecognitionThreadWrapper(object):
         self.queue_of_photos += new_entries
 
     def check_and_update_quadrants(self):
-
-        current_side = self.side_handler.get_side_object(side_name)
-
-        new_hash = self.hash_file(current_side.side_config_path)
-
-        if not new_hash == self.config_hash:
-            self.side_handler.read_sides_from_configs()
-            self.side_handler.create_all_side_dirs()
-
-            self.config_hash = new_hash
+        # TODO: Make a more time-efficient way of checking this.
+        # new_hash = self.side_handler.get_side_hashes()
+        #
+        # if not new_hash == self.all_config_hashes:
+        #     self.side_handler.read_sides_from_configs()
+        #     self.side_handler.create_all_side_dirs()
+        #
+        #     self.all_config_hashes = new_hash
+        self.side_handler.read_sides_from_configs()
+        self.side_handler.create_all_side_dirs()
 
     def determine_photo_side_and_quad(self, photo_path):
         photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)
@@ -165,6 +165,19 @@ class RecognitionThreadWrapper(object):
             self.side_handler.create_all_side_dirs()
 
     # Thanks to https://www.pythoncentral.io/hashing-files-with-python/
+
+    def wipe_previous_directories(self):
+        if os.path.exists(self.CONFIG_DIR):
+            shutil.rmtree(self.CONFIG_DIR)
+
+        inter_output_directory = os.path.join(self.GENERAL_IO_ABS_PATH, "intermediary")
+        final_output_directory = os.path.join(self.GENERAL_IO_ABS_PATH, "output")
+
+        if os.path.exists(inter_output_directory):
+            shutil.rmtree(inter_output_directory)
+
+        if os.path.exists(final_output_directory):
+            shutil.rmtree(final_output_directory)
 
 
 if __name__ == "__main__":

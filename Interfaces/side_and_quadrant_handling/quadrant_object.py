@@ -75,7 +75,7 @@ class Quadrant(object):
         right_limit, top_limit_on = right_limit_on.split("Top_Limit (m): ")
         top_limit, bottom_limit = top_limit_on.split("Bottom_Limit (m): ")
 
-        self.quadrant_name = name_string.replace(' ', '')
+        self.quadrant_name = name_string.rstrip(' ')
 
         self.coord_dict["left_latitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
         self.coord_dict["left_longitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1])

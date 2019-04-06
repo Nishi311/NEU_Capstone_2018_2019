@@ -11,6 +11,7 @@ import os
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
+
 side = "NO SIDE CHOSEN"
 quadrant = "NO QUADRANT CHOSEN"
 
@@ -137,10 +138,12 @@ def select_new_quadrant():
 @app.route('/select_new_side', methods=['GET', 'POST'])
 def select_new_side():
     global side
+    global quadrant
 
     if request.method == 'POST':
         if request.form['side'] != "No Sides Found":
             side = request.form['side']
+            quadrant = "No Quadrant Chosen"
             print(side)
         return jsonify("success")
 
@@ -191,6 +194,7 @@ def add_new_side():
     new_side_name = "Side {0}".format(get_num_sides()+1)
     side_object = SideObject(new_side_name)
     side_object.write_quadrants_to_config(js_data)
+    side_object.create_side_dirs()
 
     return "And Hello to you too"
 
@@ -200,7 +204,10 @@ def get_num_sides():
     if os.path.exists(path):
         try:
             for root, dirs, files in os.walk(path):
-                return len(dirs)
+                if "Unknown Side" in dirs:
+                    return len(dirs)-1
+                else:
+                    return len(dirs)
         except Exception as e:
             return -1
     else:

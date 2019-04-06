@@ -12,7 +12,7 @@ class SideObject(object):
         if side_name:
             self.side_name = side_name
         else:
-            self.side_name = "Unknown Side"
+            self.side_name = None
 
         self.side_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs", side_name)
         self.side_config_path = os.path.join(self.side_dir, self.CONFIG_FILE_NAME)
@@ -73,6 +73,7 @@ class SideObject(object):
         quadrant_objects = []
         for refined_quad_string in refined_quad_strings:
             new_quad_object = Quadrant()
+            new_quad_object.side_name = self.side_name
             new_quad_object.parse_js_string(refined_quad_string)
             quadrant_objects.append(new_quad_object)
 
