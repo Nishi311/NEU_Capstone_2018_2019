@@ -36,7 +36,6 @@ class RecognitionThreadWrapper(object):
 
         if os.path.exists(self.CONFIG_PATH):
             self.config_hash = self.hash_file(self.CONFIG_PATH)
-        self.quadrant_handler = QuadrantHandler()
         self.side_handler = SideHandler()
 
         # List of photos that currently need to be processed
@@ -72,7 +71,6 @@ class RecognitionThreadWrapper(object):
         Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
-        self.quadrant_handler.read_quadrants_from_config()
         self.side_handler.read_sides_from_configs()
         
         self.create_general_directories()
@@ -133,7 +131,6 @@ class RecognitionThreadWrapper(object):
         new_hash = self.hash_file(self.CONFIG_PATH)
 
         if not new_hash == self.config_hash:
-            self.quadrant_handler.read_quadrants_from_config()
             self.side_handler.read_sides_from_configs()
             self.side_handler.create_all_side_dirs()
 
