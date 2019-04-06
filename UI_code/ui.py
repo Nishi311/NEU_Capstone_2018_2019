@@ -189,11 +189,23 @@ def get_all_image_data():
 def add_new_side():
     js_data = request.form['grid_data']
 
-    new_side_name = "Side {0}".format(len(get_sides_list()))
+    new_side_name = "Side {0}".format(get_num_sides()+1)
     side_object = SideObject(new_side_name)
     side_object.write_quadrants_to_config(js_data)
 
     return "And Hello to you too"
+
+def get_num_sides():
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_reports")
+
+    if os.path.exists(path):
+        try:
+            for root, dirs, files in os.walk(path):
+                return len(dirs)
+        except Exception as e:
+            return -1
+    else:
+        return -1
 
 # Opens the program to the main menu.
 def main():

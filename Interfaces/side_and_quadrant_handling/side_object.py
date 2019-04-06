@@ -20,8 +20,8 @@ class SideObject(object):
 
     def write_quadrants_to_config(self, raw_js_string):
 
-        if not os.path.exists(self.side_name):
-            os.makedirs(self.side_name)
+        if not os.path.exists(self.side_dir):
+            os.makedirs(self.side_dir)
 
         self.quadrant_list = self.parse_raw_js_input(raw_js_string)
 

@@ -187,8 +187,7 @@ $(document).on("click", "#add_side", function() {
     $("div.grid-wrapper").attr("data-total-number",rows*quad_side_meters);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
 
-    $.post("/update_quadrant_config", {grid_data: quadrant_grid});
-
+    $.post("/add_new_side", {grid_data: quadrant_grid});
 
     document.getElementById("right_lat").value = "0";
     document.getElementById("right_long").value = "0";

@@ -12,14 +12,16 @@ class SideHandler(object):
 
     def read_sides_from_configs(self):
         list_of_dirs = []
-        for root, dirs, files in os.walk(path):
-            list_of_dirs = dirs
-            break
+        if os.path.exists(self.CONFIGS_DIR):
 
-        for dir_name in list_of_dirs:
-            side_object = SideObject(dir_name)
-            side_object.read_quadrants_from_config()
-            self.side_list.append(side_object)
+            for root, dirs, files in os.walk(self.CONFIGS_DIR):
+                list_of_dirs = dirs
+                break
+
+            for dir_name in list_of_dirs:
+                side_object = SideObject(dir_name)
+                side_object.read_quadrants_from_config()
+                self.side_list.append(side_object)
 
     def determine_side_and_quadrant(self, photo_lat, photo_long, photo_alt):
 
