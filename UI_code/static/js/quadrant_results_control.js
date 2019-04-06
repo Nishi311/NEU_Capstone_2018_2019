@@ -25,11 +25,13 @@ function update_dynamic_table()
 
                 table +='<tr><th><center><img src="' + photo_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center><th>' + success_value + '</th><th>' + coordinate_bundle + '</th></tr>';
             }
+            table += selected_side + ': ';
             table += selected_quadrant + '<br>';
 
             table += '</table>'
             $("div.table_of_images").html(table);
         } else{
+            table += selected_side + ': ';
             table += selected_quadrant + '<br>';
             table += "No Images yet processed for quadrant";
             table += '</table>'
@@ -68,7 +70,7 @@ function update_dynamic_sides_and_quadrants()
         var dropdown = '';
         if (data != "No quadrants found"){
             for (var i = 0, len = data.length; i < len; ++i) {
-                dropdown +='<a href="#" onclick=\'select_new_quad(' + data[i] + ');\'>' + data[i] + '</a>';
+                dropdown +='<a href="#" onclick=\"select_new_quad(\'' + data[i] + '\');\">' + data[i] + '</a>';
             }
         } else{
             var no_quad_string = 'No Quadrants Found';
@@ -94,9 +96,13 @@ $(document).on("mouseenter", "tr", function() {
 });
 
 function select_new_quad(new_quad){
-    $.post("/select_new_quadrant",{quadrant:new_quad});
+    $.post("/select_new_quadrant",{quadrant:new_quad}, function(){
+        selected_quadrant = new_quad
+    });
 }
 
 function select_new_side(new_side){
-    $.post("/select_new_side",{side:new_side});
+    $.post("/select_new_side",{side:new_side}, function(){
+        selected_side = new_side
+    });
 }

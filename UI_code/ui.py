@@ -11,8 +11,8 @@ import os
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
-side = "Unknown Side"
-quadrant = "Unknown Quadrant"
+side = "NO SIDE CHOSEN"
+quadrant = "NO QUADRANT CHOSEN"
 
 # Main menu
 @app.route('/')
@@ -154,7 +154,6 @@ def get_all_image_data():
     global side
 
     path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", side, quadrant)
-    print(path)
     image_list = []
     try:
         for throw_away_root, throw_away_dirs, image_list in os.walk(path):

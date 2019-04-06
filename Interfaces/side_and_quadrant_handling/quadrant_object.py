@@ -3,7 +3,10 @@ import os
 
 class Quadrant(object):
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-
+    RELATIVE_FINISHED_PHOTO_DIR = os.path.join(THIS_FILE_PATH, "..", "..", "UI_code", "static", "generalIO",
+                                               "output", "finished_photos")
+    RELATIVE_FINISHED_REPORT_DIR = os.path.join(THIS_FILE_PATH, "..", "..", "UI_code", "static", "generalIO",
+                                                "output", "finished_reports")
     def __init__(self):
         self._quadrant_name = ""
         self._side_name = ""
@@ -17,11 +20,9 @@ class Quadrant(object):
                            "top_altitude_Meters": 0,
                            "bottom_altitude_Meters": 0}
 
-        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                             "finished_photos", self.side_name, self.quadrant_name)
+        self.photo_output_dir = os.path.join(self.RELATIVE_FINISHED_PHOTO_DIR, self.side_name, self.quadrant_name)
 
-        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                              "finished_reports", self.side_name, self.quadrant_name)
+        self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self.side_name, self.quadrant_name)
 
     @property
     def quadrant_name(self):
@@ -31,12 +32,9 @@ class Quadrant(object):
     def quadrant_name(self, new_quadrant_name):
         self._quadrant_name = new_quadrant_name
 
-        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                             "finished_photos", self.side_name, self._quadrant_name)
+        self.photo_output_dir = os.path.join(self.RELATIVE_FINISHED_PHOTO_DIR, self.side_name, self._quadrant_name)
 
-        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                              "finished_reports", self.side_name, self._quadrant_name)
-
+        self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self.side_name, self._quadrant_name)
     @property
     def side_name(self):
         return self._side_name
@@ -45,11 +43,9 @@ class Quadrant(object):
     def side_name(self, new_side_name):
         self._side_name = new_side_name
 
-        self.photo_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                             "finished_photos", self._side_name, self.quadrant_name)
+        self.photo_output_dir = os.path.join(self.RELATIVE_FINISHED_PHOTO_DIR, self._side_name, self.quadrant_name)
 
-        self.report_output_dir = os.path.join(self.THIS_FILE_PATH, "..", "..", "UI_code", "static", "output",
-                                              "finished_reports", self._side_name, self.quadrant_name)
+        self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self._side_name, self.quadrant_name)
 
     def parse_js_string(self, js_string):
         """
