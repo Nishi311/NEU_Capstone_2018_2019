@@ -239,7 +239,11 @@ class basic(object):
         recognition_wrapper = RecognitionThreadWrapper()
         recognition_wrapper.run_module()
 
-        webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
+        try:
+            webbrowser.get('windows-default').open("http://127.0.0.1:5000/")
+        except:
+            webbrowser.get('chrome').open("http://127.0.0.1:5000/")
+        
         app.run(host='127.0.0.1')
 
 #if __name__ == "__main__":
