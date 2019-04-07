@@ -66,7 +66,6 @@ class GPSHandler(object):
         if gps_altitude and gps_altitude_ref:
             alt = gps_altitude.values[0]
             altitude = alt.num / alt.den
-            if gps_altitude_ref.values[0] == 1: altitude *= -1
 
         return lat, lon, altitude
 
