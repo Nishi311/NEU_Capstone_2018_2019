@@ -3,6 +3,7 @@ $(document).on("click", "#add_side", function() {
 
     // Length of a grid in METERS
     var quad_side_meters = parseFloat($("#quadrant_side_size").val());
+    var num_photos_per_quad = parseInt($("#num_photos_per_quad").val());
 
     //get coordinate corner points
     var top_right_lat = parseFloat($("#right_lat").val());
@@ -187,7 +188,7 @@ $(document).on("click", "#add_side", function() {
     $("div.grid-wrapper").attr("data-total-number",rows*quad_side_meters);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
 
-    $.post("/add_new_side", {grid_data: quadrant_grid});
+    $.post("/add_new_side", {grid_data: quadrant_grid, num_photos_per_quad:num_photos_per_quad});
 
     document.getElementById("right_lat").value = "0";
     document.getElementById("right_long").value = "0";

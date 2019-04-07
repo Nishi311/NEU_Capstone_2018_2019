@@ -20,6 +20,7 @@ class SideHandler(object):
                 list_of_dirs = dirs
                 break
 
+            # TODO: Figure out a way to stop this thing from continously adding more redundant sides.
             for dir_name in list_of_dirs:
                 side_object = SideObject(dir_name)
                 side_object.read_quadrants_from_config()

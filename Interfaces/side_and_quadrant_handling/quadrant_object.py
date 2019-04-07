@@ -1,5 +1,6 @@
 import os
-
+import glob
+from .status_values import StatusValues
 
 class Quadrant(object):
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -10,6 +11,10 @@ class Quadrant(object):
     def __init__(self):
         self._quadrant_name = ""
         self._side_name = ""
+
+        self.current_status = StatusValues.NOT_STARTED
+
+        self.num_photos_per_quad = 0
 
         self.coord_dict = {"left_latitude_DD": 0,
                            "left_longitude_DD": 0,
@@ -35,6 +40,7 @@ class Quadrant(object):
         self.photo_output_dir = os.path.join(self.RELATIVE_FINISHED_PHOTO_DIR, self.side_name, self._quadrant_name)
 
         self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self.side_name, self._quadrant_name)
+
     @property
     def side_name(self):
         return self._side_name
@@ -47,12 +53,14 @@ class Quadrant(object):
 
         self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self._side_name, self.quadrant_name)
 
-    def parse_js_string(self, js_string):
+    def parse_js_string(self, js_string, num_photos_per_quad):
         """
         Parses the given refined JS string and sets the parameters of the object.
         :param js_string: (string) -> MUST be in the format:
                            "Quadrant 56" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.07"
                            long_limit_right="1.07" top_limit="5" bottom_limit="1"
+       :param num_photos_per_quad: (int) -> The number of photos each quadrants should have before being considered "complete"
+
         """
         name_string, left_lat_limit_on = js_string.split("lat_limit_left=")
         left_lat_limit, left_long_limit_on = left_lat_limit_on.split("long_limit_left=")
@@ -62,6 +70,7 @@ class Quadrant(object):
         top_limit, bottom_limit = top_limit_on.split("bottom_limit=")
 
         self.quadrant_name = name_string.replace('\"', '')
+        self.num_photos_per_quad = num_photos_per_quad
         self.coord_dict["left_latitude_DD"] = left_lat_limit.replace('\"', '').replace(' ', '')
         self.coord_dict["left_longitude_DD"] = left_long_limit.replace('\"', '').replace(' ', '')
         self.coord_dict["right_latitude_DD"] = right_lat_limit.replace('\"', '').replace(' ', '')
@@ -70,13 +79,20 @@ class Quadrant(object):
         self.coord_dict["bottom_altitude_Meters"] = bottom_limit.replace('\"', '').replace(' ', '')
 
     def parse_config_string(self, config_string):
-        name_string, left_limit_on = config_string.split("Left_Limit (DD): ")
+        """
+        Parses the given refined config string and sets the parameters of the object.
+        :param js_string: (string) -> MUST be in the format:
+                           "Quadrant 56" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.07"
+                           long_limit_right="1.07" top_limit="5" bottom_limit="1"
+        """
+        name_string, num_photos_on = config_string.split("Num_Photos: ")
+        num_photos, left_limit_on = num_photos_on.split("Left_Limit (DD): ")
         left_limit, right_limit_on = left_limit_on.split("Right_Limit (DD):")
         right_limit, top_limit_on = right_limit_on.split("Top_Limit (m): ")
         top_limit, bottom_limit = top_limit_on.split("Bottom_Limit (m): ")
 
         self.quadrant_name = name_string.rstrip(' ')
-
+        self.num_photos_per_quad = int(num_photos)
         self.coord_dict["left_latitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
         self.coord_dict["left_longitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1])
         self.coord_dict["right_latitude_DD"] = float(right_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
@@ -85,8 +101,14 @@ class Quadrant(object):
         self.coord_dict["bottom_altitude_Meters"] = float(bottom_limit.replace(' ', ''))
 
     def generate_string(self):
-        output_string = "Quadrant Name: {0}\nLeft_Limit (DD): ({1}, {2})\nRight_Limit (DD): ({3}, {4})\nTop_Limit (m): " \
-                        "{5}\nBottom_Limit (m): {6}\n\n".format(self.quadrant_name,
+        """
+        Generates a string that contains the quadrant name, number of photos, left / right lat & long limits
+        (in Decimal Degree) and top and bottom altitude limits (in meters)
+        :return: (String): Result string.
+        """
+        output_string = "Quadrant Name: {0}\nNum_Photos: {1}\nLeft_Limit (DD): ({2}, {3})\nRight_Limit (DD): ({4}, {5})\nTop_Limit (m): " \
+                        "{6}\nBottom_Limit (m): {7}\n\n".format(self.quadrant_name,
+                                                                self.num_photos_per_quad,
                                                                 self.coord_dict["left_latitude_DD"],
                                                                 self.coord_dict["left_longitude_DD"],
                                                                 self.coord_dict["right_latitude_DD"],
@@ -114,12 +136,32 @@ class Quadrant(object):
         return True
 
     def create_output_directories(self):
-
+        """
+        Creates the output directories needed to store quadrant results in the UI/static/generalIO directory
+        """
         if not os.path.exists(self.photo_output_dir):
             os.makedirs(self.photo_output_dir)
 
         if not os.path.exists(self.report_output_dir):
             os.makedirs(self.report_output_dir)
+
+    def check_and_return_status(self):
+        """
+        Returns a value corresponding to the status of the quadrant. If no images are in the quadrant report directory,
+        the quadrant has not been started. If there are photos in the directory but not enough to match the designated
+        end number, it is in progress. If there are sufficient photos to meet the requirement, it has been completed.
+        :return: (StatusValue): StatusValue corresponding to the quadrant's state.
+        """
+        try:
+            list_of_completed_reports = glob.glob(self.photo_output_dir)
+            if len(list_of_completed_reports) == self.num_photos_per_quad:
+                return StatusValues.COMPLETE
+            elif len(list_of_completed_reports) > 0:
+                return StatusValues.IN_PROGRESS
+            else:
+                return StatusValues.NOT_STARTED
+        except Exception:
+            return StatusValues.NOT_STARTED
 
     @staticmethod
     def range_check(left_coord, right_coord, checking_coord):

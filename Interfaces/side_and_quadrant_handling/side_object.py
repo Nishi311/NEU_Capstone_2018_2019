@@ -18,18 +18,26 @@ class SideObject(object):
         self.side_config_path = os.path.join(self.side_dir, self.CONFIG_FILE_NAME)
         self.quadrant_list = []
 
-    def write_quadrants_to_config(self, raw_js_string):
-
+    def write_quadrants_to_config(self, raw_js_string, num_photos_per_quad):
+        """
+        Takes a raw JS string and writes the values to a configuration file in the Interfaces/config directory
+        :param raw_js_string: (string) -> Raw Javascript string from the UI
+        :param num_photos_per_quad: (int) -> The number of photos each quadrants should have before being considered "complete"
+        """
         if not os.path.exists(self.side_dir):
             os.makedirs(self.side_dir)
 
-        self.quadrant_list = self.parse_raw_js_input(raw_js_string)
+        self.parse_raw_js_input(raw_js_string, num_photos_per_quad)
 
         with open(self.side_config_path, "w") as config_file:
             for quadrant in self.quadrant_list:
                 config_file.write(quadrant.generate_string())
 
     def read_quadrants_from_config(self):
+        """
+        Reads a config file from the pre-determined config location for the side and creates the directories necessary
+        for outputting results in the UI/static/generalIO directory if they do not already exist.
+        """
         if not os.path.exists(self.side_config_path):
             print("quadrant_handler, read_quadrants_from_config(): ERROR. Could not find quadrant config file "
                   "{0}".format(self.side_config_path))
@@ -45,7 +53,13 @@ class SideObject(object):
 
         self.parse_raw_config_input(raw_config_string)
 
-    def parse_raw_js_input(self, raw_js_string):
+    def parse_raw_js_input(self, raw_js_string, num_photos_per_quad):
+        """
+        Parsing helper function that generates the internal list of quadrants based on the raw Javascript string.
+        :param raw_js_string: (string) -> The raw Javascript string to parse.
+        :param num_photos_per_quad: (int) -> The number of photos each quadrants should have before being considered "complete"
+        """
+
         # Data comes in in a big string like this:
         #
         # <div class="grid-item examined-next" id="Quadrant 6" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.665361236570813" long_limit_right="1.665361236570813" top_limit="2" bottom_limit="1"></div>
@@ -74,13 +88,16 @@ class SideObject(object):
         for refined_quad_string in refined_quad_strings:
             new_quad_object = Quadrant()
             new_quad_object.side_name = self.side_name
-            new_quad_object.parse_js_string(refined_quad_string)
+            new_quad_object.parse_js_string(refined_quad_string, num_photos_per_quad)
             quadrant_objects.append(new_quad_object)
 
-        return quadrant_objects
+        self.quadrant_list = quadrant_objects
 
     def parse_raw_config_input(self, raw_config_input):
-
+        """
+        Parsing helper function that generates the internal list of quadrants based on the raw config string.
+        :param raw_config_input: (string) -> The raw config string to parse.
+        """
         super_string = ""
         for line in raw_config_input:
             super_string += line.replace('\n', ' ')
@@ -98,7 +115,14 @@ class SideObject(object):
         self.quadrant_list = quadrant_objects
 
     def determine_quadrant_from_coords(self, lat, long, alt):
-
+        """
+        Based on the latitude, longitude (both Decminal Degree) and altitude (Meters) given, determines what quadrant
+        on this side (if any) the coordinates belong to.
+        :param lat: Latitude to check (Decimal Degree)
+        :param long: Longitude to check (Decimal Degree)
+        :param alt: Altitude to check (Meters)
+        :return: (String) -> The name of the quadrant (if found). Otherwise returns False.
+        """
         for quadrant in self.quadrant_list:
             if isinstance(quadrant, Quadrant):
                 if quadrant.check_coordinates(lat, long, alt):
@@ -107,7 +131,22 @@ class SideObject(object):
         return False
 
     def create_side_dirs(self):
+        """
+        Creates all the output directories necessary for the side.
+        """
         for quadrant in self.quadrant_list:
             if isinstance(quadrant, Quadrant):
                 quadrant.create_output_directories()
 
+    def check_and_return_all_quadrant_statuses(self):
+        """
+        Queries all child quadrants for their status and returns it.
+        :return: (list) -> A list of [quadrant name, quadrant status] pairs.
+        """
+        list_of_quadrant_statuses = []
+
+        for quadrant in self.quadrant_list:
+            quadrant_status = quadrant.check_and_return_status()
+            list_of_quadrant_statuses.append([quadrant.quadrant_name, quadrant_status])
+
+        return list_of_quadrant_statuses

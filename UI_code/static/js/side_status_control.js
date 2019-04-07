@@ -1,5 +1,9 @@
-setInterval("update_dynamic_quadrants_progress();",1000);
+setInterval("update_side_status_bar();",1000);
+setInterval("update_side_status_grid();",1000);
 
+setInterval("update_status_side_selected();",1000);
+
+var selected_status_side = "NO SIDE CHOSEN"
 $(document).on("click", "div.grid-item", function() {
 
     var quadrant_name = $(this).attr("id");
@@ -23,7 +27,32 @@ $(document).on("click", "div.grid-item", function() {
     alert(str);
 });
 
-function update_dynamic_quadrants_progress()
+function update_status_side_selected(){
+    $.get("/get_sides_list",function(data){
+        var dropdown = '';
+        if (data != "No sides found"){
+            for (var i = 0, len = data.length; i < len; ++i) {
+                dropdown += '<a href="#" onclick=\"select_new_status_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
+            }
+        } else{
+             dropdown +='<a href="#">No Sides Found</a>';
+        }
+        //alert( "Data Loaded: " + table);
+        $("div.status_dropdown_content").html(dropdown);
+    });
+}
+
+function select_new_status_side(new_side){
+    $.post("/select_new_status_side",{side:new_side}, function(){
+        selected_status_side = new_side
+    });
+}
+
+function update_side_status_grid(){
+
+}
+
+function update_side_status_bar()
 {
     var total = $("div.grid-wrapper").attr("data-total-number");
     var num = $("div.grid-wrapper").attr("data-complete");

@@ -1,14 +1,13 @@
-setInterval("update_dynamic_table();",1000);
-//setInterval("update_dynamic_quadrants();",1000);
-setInterval("update_dynamic_sides_and_quadrants();", 1000);
+setInterval("update_result_table();",1000);
+setInterval("update_result_sides_and_quadrant_selection();", 1000);
 
 var output_directory = "static/generalIO/output"
 var output_photo_directory = output_directory + "/finished_photos"
 var output_report_directory = output_directory + "/finished_reports"
-var selected_side = "No Side Chosen"
-var selected_quadrant = "No Quadrant Chosen"
+var selected_results_side = "No Side Chosen"
+var selected_results_quadrant = "No Quadrant Chosen"
 
-function update_dynamic_table()
+function update_result_table()
 {
     $.get("/get_all_image_data",function(returned_data){
         var table = '<table><tr><th><b>Image</b></th><th><b>Status</b></th><th><b>GPS Coordinates</b></th></tr>';
@@ -25,14 +24,14 @@ function update_dynamic_table()
 
                 table +='<tr><th><center><img src="' + photo_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center><th>' + success_value + '</th><th>' + coordinate_bundle + '</th></tr>';
             }
-            table += selected_side + ': ';
-            table += selected_quadrant + '<br>';
+            table += selected_results_side + ': ';
+            table += selected_results_quadrant + '<br>';
 
             table += '</table>'
             $("div.table_of_images").html(table);
         } else{
-            table += selected_side + ': ';
-            table += selected_quadrant + '<br>';
+            table += selected_results_side + ': ';
+            table += selected_results_quadrant + '<br>';
             table += "No Images yet processed for quadrant";
             table += '</table>'
             $("div.table_of_images").html(table);
@@ -51,13 +50,13 @@ function retrieve_image_info(partial_image_path){
 
 }
 
-function update_dynamic_sides_and_quadrants()
+function update_result_sides_and_quadrant_selection()
 {
     $.get("/get_sides_list",function(data){
         var dropdown = '';
         if (data != "No sides found"){
             for (var i = 0, len = data.length; i < len; ++i) {
-                dropdown += '<a href="#" onclick=\"select_new_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
+                dropdown += '<a href="#" onclick=\"select_new_result_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
             }
         } else{
              dropdown +='<a href="#">No Sides Found</a>';
@@ -70,11 +69,11 @@ function update_dynamic_sides_and_quadrants()
         var dropdown = '';
         if (data != "No quadrants found"){
             for (var i = 0, len = data.length; i < len; ++i) {
-                dropdown +='<a href="#" onclick=\"select_new_quad(\'' + data[i] + '\');\">' + data[i] + '</a>';
+                dropdown +='<a href="#" onclick=\"select_new_result_quadrant(\'' + data[i] + '\');\">' + data[i] + '</a>';
             }
         } else{
             var no_quad_string = 'No Quadrants Found';
-            dropdown += '<a href="#" onclick=\"select_new_quad(\'' + no_quad_string + '\');\">' + no_quad_string + '</a>';
+            dropdown += '<a href="#" onclick=\"select_new_result_quadrant(\'' + no_quad_string + '\');\">' + no_quad_string + '</a>';
         }
         //alert( "Data Loaded: " + table);
         $("div.quad_dropdown_content").html(dropdown);
@@ -95,15 +94,15 @@ $(document).on("mouseenter", "tr", function() {
     }
 });
 
-function select_new_quad(new_quad){
+function select_new_result_quadrant(new_quad){
     $.post("/select_new_quadrant",{quadrant:new_quad}, function(){
-        selected_quadrant = new_quad
+        selected_results_quadrant = new_quad
     });
 }
 
-function select_new_side(new_side){
-    $.post("/select_new_side",{side:new_side}, function(){
-        selected_side = new_side
-        selected_quadrant = "No Quadrant Chosen";
+function select_new_result_side(new_side){
+    $.post("/select_new_result_side",{side:new_side}, function(){
+        selected_results_side = new_side
+        selected_results_quadrant = "No Quadrant Chosen";
     });
 }

@@ -12,8 +12,10 @@ app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
 
-side = "NO SIDE CHOSEN"
-quadrant = "NO QUADRANT CHOSEN"
+result_side = "NO SIDE CHOSEN"
+result_quadrant = "NO QUADRANT CHOSEN"
+
+status_side = "NO SIDE CHOSEN"
 
 # Main menu
 @app.route('/')
@@ -92,7 +94,6 @@ def get_sides_list():
         try:
             for root, dirs, files in os.walk(path):
                 if dirs:
-                    print(dirs)
                     return jsonify(dirs)
                 else:
                     return jsonify("No sides found")
@@ -104,15 +105,14 @@ def get_sides_list():
 
 @app.route('/get_quadrants_list', methods=['GET', 'POST'])
 def get_quadrants_list():
-    global side
+    global result_side
 
-    path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", side)
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", result_side)
 
     if os.path.exists(path):
         try:
             for root, dirs, files in os.walk(path):
                 if dirs:
-                    print(dirs)
                     return jsonify(dirs)
                 else:
                     return jsonify("No quadrants found")
@@ -122,29 +122,38 @@ def get_quadrants_list():
         return jsonify("No quadrants found")
 
 
-@app.route('/select_new_quadrant', methods=['GET', 'POST'])
-def select_new_quadrant():
-    global quadrant
+@app.route('/select_new_result_quadrant', methods=['GET', 'POST'])
+def select_new_result_quadrant():
+    global result_quadrant
 
     if request.method == 'POST':
         if request.form['quadrant'] != "No Quadrants Found":
-            quadrant = request.form['quadrant']
-            print(quadrant)
+            result_quadrant = request.form['quadrant']
         return jsonify("success")
 
     return jsonify("nothing changed")
 
 
-@app.route('/select_new_side', methods=['GET', 'POST'])
-def select_new_side():
-    global side
-    global quadrant
+@app.route('/select_new_result_side', methods=['GET', 'POST'])
+def select_new_result_side():
+    global result_side
+    global result_quadrant
 
     if request.method == 'POST':
         if request.form['side'] != "No Sides Found":
-            side = request.form['side']
-            quadrant = "No Quadrant Chosen"
-            print(side)
+            result_side = request.form['side']
+            result_quadrant = "No Quadrant Chosen"
+        return jsonify("success")
+
+    return jsonify("nothing changed")
+
+@app.route('/select_new_status_side', methods=['GET', 'POST'])
+def select_new_status_side():
+    global status_side
+
+    if request.method == 'POST':
+        if request.form['side'] != "No Sides Found":
+            result_side = request.form['side']
         return jsonify("success")
 
     return jsonify("nothing changed")
@@ -153,10 +162,10 @@ def select_new_side():
 # Gets all images stored for a give quadrant
 @app.route('/get_all_image_data', methods=['GET', 'POST'])
 def get_all_image_data():
-    global quadrant
-    global side
+    global result_quadrant
+    global result_side
 
-    path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", side, quadrant)
+    path = os.path.join(OUTPUT_DIRECTORY, "finished_photos", result_side, result_quadrant)
     image_list = []
     try:
         for throw_away_root, throw_away_dirs, image_list in os.walk(path):
@@ -165,11 +174,11 @@ def get_all_image_data():
         if image_list:
             return_list = []
             for image_name in image_list:
-                image_path_quadrant_rel = os.path.join(side, quadrant, image_name)
+                image_path_quadrant_rel = os.path.join(result_side, result_quadrant, image_name)
                 file_name_no_ext = os.path.splitext(image_name)[0]
 
                 report_name = file_name_no_ext + "_final_report.txt"
-                full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", side, quadrant, report_name)
+                full_report_path = os.path.join(OUTPUT_DIRECTORY, "finished_reports", result_side, result_quadrant, report_name)
 
                 with open(full_report_path) as report:
                     throw_away_name_line = report.readline()
@@ -178,7 +187,7 @@ def get_all_image_data():
                 coord_string = coord_line.split("Coordinates(Lat, Long, Alt): ")[1].replace('\n', '')
                 success_value = success_line.split("Crack Detected: ")[1].replace('\n', '')
 
-                final_file_return_string = "{0}|{1}|{2}|{3}".format(image_path_quadrant_rel, coord_string, quadrant,
+                final_file_return_string = "{0}|{1}|{2}|{3}".format(image_path_quadrant_rel, coord_string, result_quadrant,
                                                                     success_value)
                 return_list.append(final_file_return_string)
             return jsonify(return_list)
@@ -189,11 +198,11 @@ def get_all_image_data():
 
 @app.route('/add_new_side', methods=['POST'])
 def add_new_side():
-    js_data = request.form['grid_data']
-
+    grid_data = request.form['grid_data']
+    num_photos_per_quad = request.form['num_photos_per_quad']
     new_side_name = "Side {0}".format(get_num_sides()+1)
     side_object = SideObject(new_side_name)
-    side_object.write_quadrants_to_config(js_data)
+    side_object.write_quadrants_to_config(grid_data, num_photos_per_quad)
     side_object.create_side_dirs()
 
     return "And Hello to you too"

@@ -208,6 +208,10 @@
             display: inline-block;
         }
 
+        .dropdown:hover .dropbtn {
+            background-color: lightgrey;
+        }
+
         .quad_dropdown_content {
             display: none;
             position: absolute;
@@ -250,8 +254,25 @@
             display: block;
         }
 
-        .dropdown:hover .dropbtn {
-            background-color: lightgrey;
+         .status_dropdown_content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .status_dropdown_content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .status_dropdown_content a:hover {background-color: lightgrey}
+
+         .dropdown:hover .status_dropdown_content {
+            display: block;
         }
 
         .grid-wrapper {
@@ -342,7 +363,13 @@
         </div>
         <div class="building_display">
             <center><h2>Side Currently Under Examination</h2></center>
-            <div class="building_control">
+                <div class="dropdown">
+                    <button class="dropbtn">Choose New Side</button>
+                    <div class="status_dropdown_content" id="status_dropdown_content">
+                    </div>
+                </div>
+
+                <div class="building_control">
                     <center>
                         Building selected:
                         <input type="text" name="firstname" value="Prudential">
@@ -376,6 +403,11 @@
 
                 <div style="display:inline-block; background-color: lightgrey; width:200px; border: 1px solid black;"><center>Quadrant Side Size (m)</center></div>
                 <input type="number" style="width:75px;" id="quadrant_side_size"  min="0" max="500" step="0.001" placeholder="(m)" value="6">
+                <br>
+                <br>
+
+                <div style="display:inline-block; background-color: lightgrey; width:200px; border: 1px solid black;"><center>Number of photos per quadrant</center></div>
+                <input type="number" style="width:75px;" id="num_photos_per_quad"  min="0" max="500" step="1" placeholder="# of Photos" value="1">
                 <br>
                 <br>
 
