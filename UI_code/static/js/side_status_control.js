@@ -57,8 +57,19 @@ function update_side_status_bar()
     var total = $("div.grid-wrapper").attr("data-total-number");
     var num = $("div.grid-wrapper").attr("data-complete");
 
-    $("#myBar").css( "width", ((num/total)*100));
-    $("#myBar").text("".concat((num/total)*100).concat("% Completed"));
+    var progress_width = ((num/total)*100);
+    var progress_percent = '';
+
+    if ((num/total)*100 > 100) {
+        progress_width = '100%';
+        progress_percent = '100%';
+    } else {
+       progress_width = (progress_width.toString()).concat('%');
+       progress_percent = " ".concat((num/total)*100).concat("%");
+    }
+
+    $("#myBar").css( "width", progress_width);
+    $("#myBar").text(progress_percent);
 }
 
 
