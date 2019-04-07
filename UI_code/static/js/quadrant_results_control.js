@@ -24,15 +24,17 @@ function update_result_table()
 
                 table +='<tr><th><center><img src="' + photo_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center><th>' + success_value + '</th><th>' + coordinate_bundle + '</th></tr>';
             }
-            table += selected_results_side + ': ';
+            table += selected_results_side + '<br>';
             table += selected_results_quadrant + '<br>';
 
             table += '</table>'
             $("div.table_of_images").html(table);
         } else{
-            table += selected_results_side + ': ';
+            table += '<div class="status_window" style="width:240px; background-color: lightyellow; justify-content: start;">'
+            table += selected_results_side + '<br>';
             table += selected_results_quadrant + '<br>';
             table += "No Images yet processed for quadrant";
+            table += '</div>'
             table += '</table>'
             $("div.table_of_images").html(table);
         }
