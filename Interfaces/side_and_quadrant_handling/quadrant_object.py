@@ -1,5 +1,4 @@
 import os
-import glob
 from .status_values import StatusValues
 
 class Quadrant(object):
@@ -153,7 +152,7 @@ class Quadrant(object):
         :return: (StatusValue): StatusValue corresponding to the quadrant's state.
         """
         try:
-            list_of_completed_reports = glob.glob(self.photo_output_dir)
+            list_of_completed_reports = os.listdir(self.photo_output_dir)
             if len(list_of_completed_reports) == self.num_photos_per_quad:
                 return StatusValues.COMPLETE
             elif len(list_of_completed_reports) > 0:

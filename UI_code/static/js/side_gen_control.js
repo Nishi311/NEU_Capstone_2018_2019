@@ -180,16 +180,7 @@ $(document).on("click", "#add_side", function() {
         for(var j=0, len = columns; j < len; ++j){
 
             var str = "Quadrant ".concat(quad_num);
-
-            if ($("div.grid-wrapper").attr("data-current") === str) {
-                quadrant_grid +='<div class="grid-item examined-next" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
-            }
-            else if ($('#'.concat(str)) === str) {
-                quadrant_grid +='<div class="grid-item examined" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
-            }
-            else {
-                quadrant_grid +='<div class="grid-item" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
-            }
+            quadrant_grid +='<div class="grid-item" id="' + str + '" lat_limit_left="' + quad_left_lat_limit+ '" long_limit_left="' + quad_left_long_limit + '" lat_limit_right="' + quad_right_lat_limit + '" long_limit_right="' + quad_right_long_limit+ '" top_limit="' + quad_top_limit + '" bottom_limit="' + quad_bottom_limit + '"></div>';
 
             quad_num -= 1;
 
@@ -217,6 +208,8 @@ $(document).on("click", "#add_side", function() {
     document.getElementById("left_long").value = "0";
     document.getElementById("top_alt").value = "0";
     document.getElementById("bottom_alt").value = "0";
+
+    //TODO: Update the currently selected side in side_status_control (somehow).
 
 });
 

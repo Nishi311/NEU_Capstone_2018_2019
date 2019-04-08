@@ -4,6 +4,10 @@ setInterval("update_side_status_grid();",1000);
 setInterval("update_status_side_selected();",1000);
 
 var selected_status_side = "NO SIDE CHOSEN"
+
+var total_quads_for_selected_side = 0
+var completed_quads_for_side = 0
+
 $(document).on("click", "div.grid-item", function() {
 
     var quadrant_name = $(this).attr("id");
@@ -46,6 +50,9 @@ function select_new_status_side(new_side){
     $.post("/select_new_status_side",{side:new_side}, function(){
         selected_status_side = new_side
         update_side_status_grid()
+
+        completed_quads_for_side = 0
+        total_quads_for_selected_side = 0
     });
 }
 
@@ -56,6 +63,9 @@ function update_side_status_grid(){
 
             var row_count = status_array[1].split(":")[1];
             var column_count = status_array[2].split(":")[1];
+
+            total_quads_for_selected_side = row_count * column_count;
+
             var quadrant_status_string = status_array[3];
             var quadrant_status_array = quadrant_status_string.split("?");
 
@@ -83,6 +93,7 @@ function update_side_status_grid(){
 
                     if (current_quad_status == "COMPLETE"){
                         quadrant_grid +='<div class="grid-item examined" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        completed_quads_for_side++;
                     } else if (current_quad_status == "IN PROGRESS"){
                         quadrant_grid +='<div class="grid-item examined-next" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
                     } else{
@@ -101,22 +112,27 @@ function update_side_status_grid(){
 
 function update_side_status_bar()
 {
-    var total = $("div.grid-wrapper").attr("data-total-number");
-    var num = $("div.grid-wrapper").attr("data-complete");
+    if (selected_status_side != "NO SIDE CHOSEN"){
+        var total = total_quads_for_selected_side
+        var num = completed_quads_for_side
 
-    var progress_width = ((num/total)*100);
-    var progress_percent = '';
+        var progress_width = ((num/total)*100);
+        var progress_percent = '';
 
-    if ((num/total)*100 > 100) {
-        progress_width = '100%';
-        progress_percent = '100%';
+        if ((num/total)*100 > 100) {
+            progress_width = '100%';
+            progress_percent = '100%';
+        } else {
+           progress_width = (progress_width.toString()).concat('%');
+           progress_percent = " ".concat((num/total)*100).concat("%");
+        }
+
+        $("#myBar").css( "width", progress_width);
+        $("#myBar").text(progress_percent);
     } else {
-       progress_width = (progress_width.toString()).concat('%');
-       progress_percent = " ".concat((num/total)*100).concat("%");
+        $("#myBar").css( "width", "100%");
+        $("#myBar").text("0%");
     }
-
-    $("#myBar").css( "width", progress_width);
-    $("#myBar").text(progress_percent);
 }
 
 

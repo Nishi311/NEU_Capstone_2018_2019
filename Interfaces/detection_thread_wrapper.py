@@ -95,6 +95,7 @@ class RecognitionThreadWrapper(object):
             if self.queue_of_photos:
                 # Pop top of the queue off for recognition
                 current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
+                current_photo_name = os.path.split(current_photo)[1]
                 side_name, quad_name = self.determine_photo_side_and_quad(current_photo)
                 side_quad_path = os.path.join(side_name, quad_name)
 
@@ -108,6 +109,10 @@ class RecognitionThreadWrapper(object):
                 quadrant_photo_output_dir = os.path.join(self.photo_output_dir, side_quad_path)
                 if not os.path.exists(quadrant_photo_output_dir):
                     os.makedirs(quadrant_photo_output_dir)
+
+                output_photo_path = os.path.join(quadrant_photo_output_dir, current_photo_name)
+                if os.path.exists(output_photo_path):
+                    os.remove(output_photo_path)
 
                 shutil.move(current_photo, quadrant_photo_output_dir)
 
