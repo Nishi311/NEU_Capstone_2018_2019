@@ -54,12 +54,47 @@ function update_side_status_grid(){
         if (full_status_string != "NO SIDE CHOSEN"){
             var status_array = full_status_string.split("|");
 
-            var row_count = status_array[1].split(":")[1]
-            var column_count = status_array[2].split(":")[1]
-            var quadrant_status_string = status_array[3]
-            var quadrant_status_array = quadrant_status_string.split("?")
+            var row_count = status_array[1].split(":")[1];
+            var column_count = status_array[2].split(":")[1];
+            var quadrant_status_string = status_array[3];
+            var quadrant_status_array = quadrant_status_string.split("?");
 
-            var test = "Hello world"
+            //First item is blank, eliminate it.
+            quadrant_status_array.shift()
+
+            var test = "Hello world";
+            var current_cell_num = 0;
+
+            var quadrant_grid = '';
+            for (var row_index = 0; row_index < row_count; row_index++){
+
+                for (var col_index = 0; col_index < column_count; col_index++){
+                    var current_quad_string = quadrant_status_array[current_cell_num];
+                    var current_quad_value_array = current_quad_string.split(",");
+
+                    var current_quad_name = current_quad_value_array[0];
+                    var current_quad_status = current_quad_value_array[1];
+                    var current_quad_left_lat = current_quad_value_array[2];
+                    var current_quad_left_long = current_quad_value_array[3];
+                    var current_quad_right_lat = current_quad_value_array[4];
+                    var current_quad_right_long = current_quad_value_array[5];
+                    var current_quad_top = current_quad_value_array[6];
+                    var current_quad_bottom = current_quad_value_array[7];
+
+                    if (current_quad_status == "COMPLETE"){
+                        quadrant_grid +='<div class="grid-item examined" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                    } else if (current_quad_status == "IN PROGRESS"){
+                        quadrant_grid +='<div class="grid-item examined-next" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                    } else{
+                        quadrant_grid +='<div class="grid-item" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                    }
+                    current_cell_num++;
+                }
+            }
+            $("div.grid-wrapper").html(quadrant_grid);
+            $("div.grid-wrapper").css({"grid-template-columns": "repeat("+column_count+",1fr)", "grid-template-rows": "repeat("+row_count+",25px)"});
+            $("div.grid-wrapper").attr("data-total-number",column_count*row_count);
+            $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
         }
     });
 }

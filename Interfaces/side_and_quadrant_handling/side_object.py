@@ -166,13 +166,12 @@ class SideObject(object):
 
         for quadrant in self.quadrant_list:
             quadrant_status = quadrant.check_and_return_status()
-            quadrant_status_string += "?{0}:{1},left_lat:{2},left_long:{3},right_lat:{4},right_long:{5},top:{6},bot:{7}" \
-                                      .format(quadrant.quadrant_name, quadrant_status,
-                                              quadrant.coord_dict["left_latitude_DD"],
-                                              quadrant.coord_dict["left_longitude_DD"],
-                                              quadrant.coord_dict["right_latitude_DD"],
-                                              quadrant.coord_dict["right_longitude_DD"],
-                                              quadrant.coord_dict["top_altitude_Meters"],
-                                              quadrant.coord_dict["bottom_altitude_Meters"])
+            quadrant_status_string += "?{0},{1},{2},{3},{4},{5},{6},{7}" .format(quadrant.quadrant_name, quadrant_status,
+                                                                                 quadrant.coord_dict["left_latitude_DD"],
+                                                                                 quadrant.coord_dict["left_longitude_DD"],
+                                                                                 quadrant.coord_dict["right_latitude_DD"],
+                                                                                 quadrant.coord_dict["right_longitude_DD"],
+                                                                                 quadrant.coord_dict["top_altitude_Meters"],
+                                                                                 quadrant.coord_dict["bottom_altitude_Meters"])
 
         return quadrant_status_string
