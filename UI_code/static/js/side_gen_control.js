@@ -22,6 +22,10 @@ $(document).on("click", "#add_side", function() {
     var bottom_left_long = parseFloat($("#left_long").val());
     var bottom_left_alt = parseFloat($("#bottom_alt").val());
 
+    if (top_left_alt <= bottom_left_alt){
+        return;
+    }
+
     // Thanks to https://en.wikipedia.org/wiki/Decimal_degrees for the info
     // This number represents the number of meters represented by one degree of latitude
     var one_degree_const_meters_lat = 111320;
@@ -72,9 +76,13 @@ $(document).on("click", "#add_side", function() {
         quad_long_displacement_meters = quad_side_meters;
 
         var total_long_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
-        columns = Math.ceil(total_long_diff_meters/quad_side_meters);
-
-        quad_long_displacement_meters = total_long_diff_meters / columns;
+        if (total_long_diff_meters < quad_side_meters){
+            columns = 1
+            quad_long_displacement_meters = quad_side_meters;
+        } else{
+            columns = Math.ceil(total_long_diff_meters/quad_side_meters);
+            quad_long_displacement_meters = total_long_diff_meters / columns;
+        }
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
@@ -90,6 +98,14 @@ $(document).on("click", "#add_side", function() {
 
         quad_lat_displacement_meters = quad_side_meters;
         var total_lat_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
+        if (total_lat_diff_meters < quad_side_meters){
+            columns = 1
+            quad_lat_displacement_meters = quad_side_meters;
+        } else{
+            columns = Math.ceil(total_lat_diff_meters/quad_side_meters);
+            quad_lat_displacement_meters = total_lat_diff_meters / columns;
+        }
+
         columns = Math.ceil(total_lat_diff_meters/quad_side_meters);
 
         quad_lat_displacement_meters = total_lat_diff_meters / columns;
@@ -108,9 +124,14 @@ $(document).on("click", "#add_side", function() {
         // between the two. This displacement will be the two arms of a right triangle where the  hypotenuse is of
         // "quade_side_meters" length.
         var hypotenuse_diff_meters = dd_lat_long_diff(top_left_lat, top_left_long, top_right_lat, top_right_long);
-        arm_diff_meters = Math.sqrt(Math.pow(hypotenuse_diff_meters, 2) / 2);
 
-        columns = Math.ceil(hypotenuse_diff_meters/quad_side_meters);
+        if (hypotenuse_diff_meters < quad_side_meters){
+            columns = 1
+            arm_diff_meters = Math.sqrt(Math.pow(quad_side_meters, 2) / 2);
+        } else{
+            columns = Math.ceil(hypotenuse_diff_meters/quad_side_meters);
+            arm_diff_meters = Math.sqrt(Math.pow(hypotenuse_diff_meters, 2) / 2);
+        }
 
         // Depending on what is considered the left and right coordinates, you may need to either add or subtract
         // the displacement.
@@ -188,7 +209,7 @@ $(document).on("click", "#add_side", function() {
     $("div.grid-wrapper").attr("data-total-number",rows*quad_side_meters);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
 
-    $.post("/add_new_side", {grid_data: quadrant_grid, num_photos_per_quad:num_photos_per_quad});
+    $.post("/add_new_side", {grid_data: quadrant_grid, num_photos_per_quad:num_photos_per_quad, num_columns:columns, num_rows:rows});
 
     document.getElementById("right_lat").value = "0";
     document.getElementById("right_long").value = "0";

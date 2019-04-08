@@ -14,22 +14,31 @@ class SideObject(object):
         else:
             self.side_name = None
 
+        self.num_columns = 0
+        self.num_rows = 0
+
         self.side_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs", side_name)
         self.side_config_path = os.path.join(self.side_dir, self.CONFIG_FILE_NAME)
         self.quadrant_list = []
 
-    def write_quadrants_to_config(self, raw_js_string, num_photos_per_quad):
+    def write_quadrants_to_config(self, raw_js_string, num_photos_per_quad, num_rows, num_columns):
         """
         Takes a raw JS string and writes the values to a configuration file in the Interfaces/config directory
         :param raw_js_string: (string) -> Raw Javascript string from the UI
         :param num_photos_per_quad: (int) -> The number of photos each quadrants should have before being considered "complete"
+        :param num_rows: (int) -> The number of rows the side should be split into (one quadrant = one cell)
+        :param num_columns: (int) -> The number of the side should be split into (one quadrant = one cell)
         """
         if not os.path.exists(self.side_dir):
             os.makedirs(self.side_dir)
 
+        self.num_rows = num_rows
+        self.num_columns = num_columns
+
         self.parse_raw_js_input(raw_js_string, num_photos_per_quad)
 
         with open(self.side_config_path, "w") as config_file:
+            config_file.write("Rows: {0}\nColumns: {1}\n\n".format(num_rows, num_columns))
             for quadrant in self.quadrant_list:
                 config_file.write(quadrant.generate_string())
 
@@ -98,6 +107,16 @@ class SideObject(object):
         Parsing helper function that generates the internal list of quadrants based on the raw config string.
         :param raw_config_input: (string) -> The raw config string to parse.
         """
+
+        row_line = raw_config_input.pop(0)
+        column_line = raw_config_input.pop(0)
+
+        num_rows = int(row_line.split("Rows: ")[1].rstrip("\n"))
+        num_columns = int(column_line.split("Columns: ")[1].rstrip("\n"))
+
+        self.num_rows = num_rows
+        self.num_columns = num_columns
+
         super_string = ""
         for line in raw_config_input:
             super_string += line.replace('\n', ' ')
@@ -138,15 +157,22 @@ class SideObject(object):
             if isinstance(quadrant, Quadrant):
                 quadrant.create_output_directories()
 
-    def check_and_return_all_quadrant_statuses(self):
+    def check_and_return_all_quadrant_statuses_string(self):
         """
-        Queries all child quadrants for their status and returns it.
-        :return: (list) -> A list of [quadrant name, quadrant status] pairs.
+        Queries all child quadrants for their status and returns it as a string.
+        :return: (string) -> A string of the quadrant statuses, in format "[quadrant name]: [quadrant status], ..."
         """
-        list_of_quadrant_statuses = []
+        quadrant_status_string = ""
 
         for quadrant in self.quadrant_list:
             quadrant_status = quadrant.check_and_return_status()
-            list_of_quadrant_statuses.append([quadrant.quadrant_name, quadrant_status])
+            quadrant_status_string += "?{0}:{1},left_lat:{2},left_long:{3},right_lat:{4},right_long:{5},top:{6},bot:{7}" \
+                                      .format(quadrant.quadrant_name, quadrant_status,
+                                              quadrant.coord_dict["left_latitude_DD"],
+                                              quadrant.coord_dict["left_longitude_DD"],
+                                              quadrant.coord_dict["right_latitude_DD"],
+                                              quadrant.coord_dict["right_longitude_DD"],
+                                              quadrant.coord_dict["top_altitude_Meters"],
+                                              quadrant.coord_dict["bottom_altitude_Meters"])
 
-        return list_of_quadrant_statuses
+        return quadrant_status_string

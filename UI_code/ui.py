@@ -200,9 +200,12 @@ def get_all_image_data():
 def add_new_side():
     grid_data = request.form['grid_data']
     num_photos_per_quad = request.form['num_photos_per_quad']
+    num_columns = request.form['num_columns']
+    num_rows = request.form['num_rows']
+
     new_side_name = "Side {0}".format(get_num_sides()+1)
     side_object = SideObject(new_side_name)
-    side_object.write_quadrants_to_config(grid_data, num_photos_per_quad)
+    side_object.write_quadrants_to_config(grid_data, num_photos_per_quad, num_rows, num_columns)
     side_object.create_side_dirs()
 
     return "And Hello to you too"
@@ -221,6 +224,24 @@ def get_num_sides():
             return -1
     else:
         return -1
+
+@app.route('/get_side_status', methods=['GET'])
+def get_side_status():
+    test = request
+    side_name = request.args.get('side_name')
+    if side_name != "NO SIDE CHOSEN":
+        side_object = SideObject(side_name)
+        side_object.read_quadrants_from_config()
+
+        return_string = "Side Name:{0}|Rows:{1}|Columns:{2}|".format(side_object.side_name,
+                                                                        side_object.num_rows,
+                                                                        side_object.num_columns)
+
+        quad_status_string = side_object.check_and_return_all_quadrant_statuses_string()
+        return_string += quad_status_string
+        return jsonify(return_string)
+    else:
+        return jsonify("NO SIDE CHOSEN")
 
 # Opens the program to the main menu.
 def main():

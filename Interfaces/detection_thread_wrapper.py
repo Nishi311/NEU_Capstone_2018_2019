@@ -30,14 +30,6 @@ class RecognitionThreadWrapper(object):
         self.final_report_output_dir = os.path.join(self.output_dir, "finished_reports")
 
         self.side_handler = SideHandler()
-        self.all_config_hashes = None
-
-        # TODO: Re-enable when hash uppdate is done.
-        # if os.path.exists(self.CONFIG_DIR):
-        #     if os.listdir(self.CONFIG_DIR):
-        #         self.all_config_hashes = self.side_handler.get_side_hashes()
-        # else:
-        #     os.makedirs(self.CONFIG_DIR)
 
         # List of photos that currently need to be processed
         self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
@@ -72,11 +64,16 @@ class RecognitionThreadWrapper(object):
         Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
-        self.wipe_previous_directories()
+        # self.wipe_previous_directories()
 
-        self.side_handler.read_sides_from_configs()
+        # Read in existing configurations, if available.
+        if os.path.exists(self.CONFIG_DIR):
+            if os.listdir(self.CONFIG_DIR):
+                self.side_handler.read_sides_from_configs()
+        else:
+            os.makedirs(self.CONFIG_DIR)
+
         self.create_general_directories()
-
 
         # Begin the main loop of check, recognize, report.
         thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
@@ -88,10 +85,11 @@ class RecognitionThreadWrapper(object):
         Never ending function that will constantly poll for new images, run recognition, and spit out results.
         """
         # Run ALL THE TIME!!!!
+        # Begin initialization of quadrant list
         while True:
             # Add any new photos in the directory to the queue
             self.check_and_update_queue()
-            self.check_and_update_quadrants()
+            self.side_handler.check_for_new_sides()
 
             # If the queue is populated, run recognition workflow on top of the queue
             if self.queue_of_photos:
@@ -129,18 +127,6 @@ class RecognitionThreadWrapper(object):
         new_entries = list(set(queue_dir_snapshot) - set(self.queue_of_photos))
         # Update the queue
         self.queue_of_photos += new_entries
-
-    def check_and_update_quadrants(self):
-        # TODO: Make a more time-efficient way of checking this.
-        # new_hash = self.side_handler.get_side_hashes()
-        #
-        # if not new_hash == self.all_config_hashes:
-        #     self.side_handler.read_sides_from_configs()
-        #     self.side_handler.create_all_side_dirs()
-        #
-        #     self.all_config_hashes = new_hash
-        self.side_handler.read_sides_from_configs()
-        self.side_handler.create_all_side_dirs()
 
     def determine_photo_side_and_quad(self, photo_path):
         photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)

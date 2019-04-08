@@ -20,9 +20,9 @@ $(document).on("click", "div.grid-item", function() {
     var str = quadrant_name + "\n\n"
     str += "Decimal Degree Format: (Latitude, Longitude, Altitude)\n\n"
     str += "Top Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + top_limit + ")\n";
-    str += "Top Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + top_limit + ")\n";
+    str += "Top Right Coordinate: (" + lat_limit_right + ", " + long_limit_right + ", " + top_limit + ")\n";
     str += "Bottom Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + bottom_limit + ")\n";
-    str += "Bottom Right Coordinate: (" + lat_limit_right + ", " + lat_limit_right + ", " + bottom_limit + ")\n";
+    str += "Bottom Right Coordinate: (" + lat_limit_right + ", " + long_limit_right + ", " + bottom_limit + ")\n";
 
     alert(str);
 });
@@ -45,11 +45,23 @@ function update_status_side_selected(){
 function select_new_status_side(new_side){
     $.post("/select_new_status_side",{side:new_side}, function(){
         selected_status_side = new_side
+        update_side_status_grid()
     });
 }
 
 function update_side_status_grid(){
+    $.get("/get_side_status",{side_name:selected_status_side}, function(full_status_string){
+        if (full_status_string != "NO SIDE CHOSEN"){
+            var status_array = full_status_string.split("|");
 
+            var row_count = status_array[1].split(":")[1]
+            var column_count = status_array[2].split(":")[1]
+            var quadrant_status_string = status_array[3]
+            var quadrant_status_array = quadrant_status_string.split("?")
+
+            var test = "Hello world"
+        }
+    });
 }
 
 function update_side_status_bar()

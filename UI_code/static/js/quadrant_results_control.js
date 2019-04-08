@@ -74,8 +74,7 @@ function update_result_sides_and_quadrant_selection()
                 dropdown +='<a href="#" onclick=\"select_new_result_quadrant(\'' + data[i] + '\');\">' + data[i] + '</a>';
             }
         } else{
-            var no_quad_string = 'No Quadrants Found';
-            dropdown += '<a href="#" onclick=\"select_new_result_quadrant(\'' + no_quad_string + '\');\">' + no_quad_string + '</a>';
+            dropdown += '<a href="#">No Quadrants Found</a>';
         }
         //alert( "Data Loaded: " + table);
         $("div.quad_dropdown_content").html(dropdown);
@@ -97,7 +96,7 @@ $(document).on("mouseenter", "tr", function() {
 });
 
 function select_new_result_quadrant(new_quad){
-    $.post("/select_new_quadrant",{quadrant:new_quad}, function(){
+    $.post("/select_new_result_quadrant",{quadrant:new_quad}, function(){
         selected_results_quadrant = new_quad
     });
 }

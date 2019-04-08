@@ -1,5 +1,4 @@
 import os
-import hashlib
 
 from .side_object import SideObject
 
@@ -11,6 +10,10 @@ class SideHandler(object):
 
     def __init__(self):
         self.side_list = []
+
+    @property
+    def num_sides(self):
+        return len(self.side_list)
 
     def read_sides_from_configs(self):
         list_of_dirs = []
@@ -39,27 +42,25 @@ class SideHandler(object):
 
         return ["Unknown Side", "Unknown Quadrant"]
 
-    def create_all_side_dirs(self):
-        for side in self.side_list:
-            if isinstance(side, SideObject):
-                side.create_side_dirs()
-
     def get_side_object(self, side_name):
         for side in self.side_list:
             if side.side_name == side_name:
                 return side
 
-    def get_side_hashes(self):
-        mega_hash = ""
+    def check_for_new_sides(self):
+        try:
+            found_num_sides = 0
+            for root, dirs, file in os.walk(self.CONFIGS_DIR):
+                found_num_sides = len(dirs)
+                break
+            if self.num_sides != found_num_sides:
+                self.side_list = []
+                self.read_sides_from_configs()
+                self.create_all_side_dirs()
+        except OSError:
+            pass
+
+    def create_all_side_dirs(self):
         for side in self.side_list:
-            mega_hash += self.hash_file(side.side_config_path)
-        return mega_hash
-
-
-    @staticmethod
-    def hash_file(file_path):
-        hasher = hashlib.md5()
-        with open(file_path, 'rb') as afile:
-            buf = afile.read()
-            hasher.update(buf)
-        return hasher.hexdigest()
+            if isinstance(side, SideObject):
+                side.create_side_dirs()
