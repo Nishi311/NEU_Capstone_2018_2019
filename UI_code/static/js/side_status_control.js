@@ -36,7 +36,9 @@ function update_status_side_selected(){
         var dropdown = '';
         if (data != "No sides found"){
             for (var i = 0, len = data.length; i < len; ++i) {
-                dropdown += '<a href="#" onclick=\"select_new_status_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
+                if (data[i] != "Unknown Side"){
+                    dropdown += '<a href="#" onclick=\"select_new_status_side(\'' + data[i] + '\');\">' + data[i] + '</a>';
+                }
             }
         } else{
              dropdown +='<a href="#">No Sides Found</a>';

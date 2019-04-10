@@ -6,7 +6,7 @@ from .side_object import SideObject
 class SideHandler(object):
 
     THIS_FILE_PATH = os.path.dirname(os.path.abspath(__file__))
-    CONFIGS_DIR = os.path.join(THIS_FILE_PATH, "..", "configs")
+    SIDE_CONFIGS_DIR = os.path.join(THIS_FILE_PATH, "..", "configs", "side_configs")
 
     def __init__(self):
         self.side_list = []
@@ -17,9 +17,9 @@ class SideHandler(object):
 
     def read_sides_from_configs(self):
         list_of_dirs = []
-        if os.path.exists(self.CONFIGS_DIR):
+        if os.path.exists(self.SIDE_CONFIGS_DIR):
 
-            for root, dirs, files in os.walk(self.CONFIGS_DIR):
+            for root, dirs, files in os.walk(self.SIDE_CONFIGS_DIR):
                 list_of_dirs = dirs
                 break
 
@@ -50,7 +50,7 @@ class SideHandler(object):
     def check_for_new_sides(self):
         try:
             found_num_sides = 0
-            for root, dirs, file in os.walk(self.CONFIGS_DIR):
+            for root, dirs, file in os.walk(self.SIDE_CONFIGS_DIR):
                 found_num_sides = len(dirs)
                 break
             if self.num_sides != found_num_sides:

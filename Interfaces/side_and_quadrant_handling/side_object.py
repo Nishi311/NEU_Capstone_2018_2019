@@ -17,7 +17,7 @@ class SideObject(object):
         self.num_columns = 0
         self.num_rows = 0
 
-        self.side_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs", side_name)
+        self.side_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs", "side_configs", side_name)
         self.side_config_path = os.path.join(self.side_dir, self.CONFIG_FILE_NAME)
         self.quadrant_list = []
 

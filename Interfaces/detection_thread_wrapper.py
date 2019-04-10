@@ -18,6 +18,7 @@ class RecognitionThreadWrapper(object):
 
     CONFIG_FILE_NAME = "quadrant_config.txt"
     CONFIG_DIR = os.path.join(THIS_FILE_PATH, "configs")
+    RECOGNITION_CONFIG_DIR = os.path.join(CONFIG_DIR, "recognition_config")
 
     def __init__(self):
         self.photo_queue_dir = os.path.join(self.GENERAL_IO_ABS_PATH, "queued_photos")
@@ -41,7 +42,33 @@ class RecognitionThreadWrapper(object):
         self.photo_list_snapshot = glob.glob(self.photo_queue_dir)
 
         self.unified_module = UnifiedRecognitionModule()
+
+        self.recognition_state_file_path = os.path.join(self.RECOGNITION_CONFIG_DIR, "state.txt")
+        self.running_recognition = False
+
+    def run_module(self):
+        """
+        Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
+        images and running recognition on them and spitting out results. Will poll for new images once a second.
+        """
+        self.wipe_previous_directories()
+
+        self.setup_recognition_config()
         self.unified_module_setup()
+
+        # Read in existing configurations, if available.
+        if os.path.exists(self.CONFIG_DIR):
+            if os.listdir(self.CONFIG_DIR):
+                self.side_handler.read_sides_from_configs()
+        else:
+            os.makedirs(self.CONFIG_DIR)
+
+        self.create_general_directories()
+
+        # Begin the main loop of check, recognize, report.
+        thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
+        thread.daemon = True
+        thread.start()
 
     def unified_module_setup(self):
         """
@@ -59,26 +86,16 @@ class RecognitionThreadWrapper(object):
         self.unified_module.cropped_px_height = 1000
         self.unified_module.cropped_px_width = 1000
 
-    def run_module(self):
+    def setup_recognition_config(self):
         """
-        Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
-        images and running recognition on them and spitting out results. Will poll for new images once a second.
+        Set recognition to not run as a default option
+        :return:
         """
-        # self.wipe_previous_directories()
+        if not os.path.exists(self.RECOGNITION_CONFIG_DIR):
+            os.makedirs(self.RECOGNITION_CONFIG_DIR)
 
-        # Read in existing configurations, if available.
-        if os.path.exists(self.CONFIG_DIR):
-            if os.listdir(self.CONFIG_DIR):
-                self.side_handler.read_sides_from_configs()
-        else:
-            os.makedirs(self.CONFIG_DIR)
-
-        self.create_general_directories()
-
-        # Begin the main loop of check, recognize, report.
-        thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
-        thread.daemon = True
-        thread.start()
+        with open(self.recognition_state_file_path, "w") as state_file:
+            state_file.write("INACTIVE")
 
     def continous_detection(self):
         """
@@ -87,39 +104,51 @@ class RecognitionThreadWrapper(object):
         # Run ALL THE TIME!!!!
         # Begin initialization of quadrant list
         while True:
-            # Add any new photos in the directory to the queue
-            self.check_and_update_queue()
+
+            # Run continual checks for new states or sides.
+            self.check_and_update_recognition_state()
             self.side_handler.check_for_new_sides()
 
-            # If the queue is populated, run recognition workflow on top of the queue
-            if self.queue_of_photos:
-                # Pop top of the queue off for recognition
-                current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
-                current_photo_name = os.path.split(current_photo)[1]
-                side_name, quad_name = self.determine_photo_side_and_quad(current_photo)
-                side_quad_path = os.path.join(side_name, quad_name)
+            if self.running_recognition:
+                # Add any new photos in the directory to the queue
+                self.check_and_update_queue()
 
-                # Run recognition workflow
-                self.unified_module.input_filepath = current_photo
-                self.unified_module.final_reports_sub_dir = os.path.join(self.unified_module.final_reports_dir,
-                                                                         side_quad_path)
-                self.unified_module.run_module()
+                # If the queue is populated, run recognition workflow on top of the queue
+                if self.queue_of_photos:
+                    # Pop top of the queue off for recognition
+                    current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
+                    current_photo_name = os.path.split(current_photo)[1]
+                    side_name, quad_name = self.determine_photo_side_and_quad(current_photo)
+                    side_quad_path = os.path.join(side_name, quad_name)
 
-                # Move finished photo out of the queue directory and into the finished directory
-                quadrant_photo_output_dir = os.path.join(self.photo_output_dir, side_quad_path)
-                if not os.path.exists(quadrant_photo_output_dir):
-                    os.makedirs(quadrant_photo_output_dir)
+                    # Run recognition workflow
+                    self.unified_module.input_filepath = current_photo
+                    self.unified_module.final_reports_sub_dir = os.path.join(self.unified_module.final_reports_dir,
+                                                                             side_quad_path)
+                    self.unified_module.run_module()
 
-                output_photo_path = os.path.join(quadrant_photo_output_dir, current_photo_name)
-                if os.path.exists(output_photo_path):
-                    os.remove(output_photo_path)
+                    # Move finished photo out of the queue directory and into the finished directory
+                    quadrant_photo_output_dir = os.path.join(self.photo_output_dir, side_quad_path)
+                    if not os.path.exists(quadrant_photo_output_dir):
+                        os.makedirs(quadrant_photo_output_dir)
 
-                shutil.move(current_photo, quadrant_photo_output_dir)
+                    output_photo_path = os.path.join(quadrant_photo_output_dir, current_photo_name)
+                    if os.path.exists(output_photo_path):
+                        os.remove(output_photo_path)
 
-            # Otherwise, wait a second and see if anything new comes up.
-            else:
-                print("Photo Queue Empty: Standing by for additional images\n")
-                time.sleep(1)
+                    shutil.move(current_photo, quadrant_photo_output_dir)
+
+                # Otherwise, wait a second and see if anything new comes up.
+                else:
+                    time.sleep(1)
+
+    def check_and_update_recognition_state(self):
+        with open(self.recognition_state_file_path) as state_file:
+            state_line = state_file.readline()
+        if state_line == "ACTIVE":
+            self.running_recognition = True
+        else:
+            self.running_recognition = False
 
     def check_and_update_queue(self):
         """

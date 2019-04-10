@@ -11,7 +11,7 @@ import os
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
-
+CONFIG_PATH = os.path.join(THIS_FILE_DIR_PATH, "../Interfaces/configs")
 result_side = "NO SIDE CHOSEN"
 result_quadrant = "NO QUADRANT CHOSEN"
 
@@ -242,6 +242,15 @@ def get_side_status():
         return jsonify(return_string)
     else:
         return jsonify("NO SIDE CHOSEN")
+
+@app.route('/toggle_recognition', methods=['POST'])
+def toggle_recognition():
+    recognition_state_path = os.path.join(CONFIG_PATH, "recognition_config", "state.txt")
+    new_state = request.form['new_state']
+
+    with open(recognition_state_path, "w+") as state_file:
+        state_file.write(new_state)
+    return jsonify("SUCCESS")
 
 # Opens the program to the main menu.
 def main():

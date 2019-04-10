@@ -6,6 +6,7 @@
         <script src="static/js/quadrant_results_control.js"></script>
         <script src="static/js/side_gen_control.js"></script>
         <script src="static/js/side_status_control.js"></script>
+        <script src="static/js/recognition_control.js"></script>
         <style>
         html {
           background: url("https://cosmos-magazine.imgix.net/file/spina/photo/4895/c68_whyisitso_1.jpg?fit=clip&w=835") no-repeat center center fixed;
@@ -370,8 +371,6 @@
         </div>
         <div class="building_display">
             <center><h2>Side Currently Under Examination</h2></center>
-                
-
                 <div class="building_control">
                     <center>
                         Building selected:
@@ -442,6 +441,13 @@
         </div>
         <br>
         <br>
+        <div class="queue_and_options">
+            <center>
+                <input type="button" id="toggle_recognition_button" value = "Start Recognition" onclick="toggleRecognition()"></input>
+            </center>
+        </div>
+        <div class="placeholder"></div>
+
         <!--<div class="control">
             <div class="drone_control">
                 <b>&nbsp; Drone Control Menu:</b>
