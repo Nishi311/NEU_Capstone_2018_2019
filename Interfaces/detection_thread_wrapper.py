@@ -9,6 +9,7 @@ from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 from Interfaces.side_and_quadrant_handling.gps_handler import GPSHandler
 from Interfaces.side_and_quadrant_handling.side_handler import SideHandler
 
+
 class RecognitionThreadWrapper(object):
 
     GENERAL_IO_RELATIVE_DIR = os.path.join("..", "UI_code", "static", "generalIO")
@@ -33,7 +34,7 @@ class RecognitionThreadWrapper(object):
         self.side_handler = SideHandler()
 
         # List of photos that currently need to be processed
-        self.queue_of_photos = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
+        self.queue_of_photos = []
 
         # List of photos that have already been processed and can be ignored
         self.finished_photos = []
@@ -44,6 +45,8 @@ class RecognitionThreadWrapper(object):
         self.unified_module = UnifiedRecognitionModule()
 
         self.recognition_state_file_path = os.path.join(self.RECOGNITION_CONFIG_DIR, "state.txt")
+        self.recognition_queue_file_path = os.path.join(self.RECOGNITION_CONFIG_DIR, "queue.txt")
+
         self.running_recognition = False
 
     def run_module(self):
@@ -64,7 +67,7 @@ class RecognitionThreadWrapper(object):
             os.makedirs(self.CONFIG_DIR)
 
         self.create_general_directories()
-
+        self.check_and_update_queue()
         # Begin the main loop of check, recognize, report.
         thread = threading.Thread(target=self.continous_detection, name="recognition_thread", args=())
         thread.daemon = True
@@ -108,11 +111,10 @@ class RecognitionThreadWrapper(object):
             # Run continual checks for new states or sides.
             self.check_and_update_recognition_state()
             self.side_handler.check_for_new_sides()
+            self.check_and_update_queue()
 
             if self.running_recognition:
                 # Add any new photos in the directory to the queue
-                self.check_and_update_queue()
-
                 # If the queue is populated, run recognition workflow on top of the queue
                 if self.queue_of_photos:
                     # Pop top of the queue off for recognition
@@ -161,6 +163,16 @@ class RecognitionThreadWrapper(object):
         new_entries = list(set(queue_dir_snapshot) - set(self.queue_of_photos))
         # Update the queue
         self.queue_of_photos += new_entries
+
+        static_relative_photo_paths = []
+        for photo_path in self.queue_of_photos:
+            UI_Code_relative_path = photo_path.replace(self.THIS_FILE_PATH, "")
+            static_relative_path = UI_Code_relative_path.replace(os.path.join("..", "UI_code", ""), "")
+
+            static_relative_photo_paths.append(static_relative_path)
+        with open(self.recognition_queue_file_path, "w+") as queue_file:
+            for entry in static_relative_photo_paths:
+                queue_file.write("{0}\n".format(entry))
 
     def determine_photo_side_and_quad(self, photo_path):
         photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)

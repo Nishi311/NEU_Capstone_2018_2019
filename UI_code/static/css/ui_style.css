@@ -34,7 +34,7 @@ tr:hover {background-color:#f5f5f5;}
     border-color: black;
     padding:5px;
 }
-div.display_table{
+div.results_display_table{
     display: inline-block;
     height:100%;
     vertical-align: top;

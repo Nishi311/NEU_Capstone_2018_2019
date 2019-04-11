@@ -13,7 +13,7 @@ $(document).ready(function(){
         }
         table += '</table>'
         //alert( "Data Loaded: " + table);
-        $("div.display_table").html(table);
+        $("div.results_display_table").html(table);
     });
 
 });
