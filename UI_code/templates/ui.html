@@ -24,7 +24,7 @@
             display:inline-block;
             float:left;
             width:9%;
-            height:460px;
+            height:920px;
             border-style:solid;
             border-color:black;
             background-image: url("https://i0.wp.com/web.northeastern.edu/numa/wp-content/uploads/1000px-Northeastern-seal.svg_.png?ssl=1");
@@ -69,14 +69,18 @@
             margin-left:0px;
         }
 
-        div.queue_display_table{
-            display: inline-block;
-            vertical-align: top;
-            overflow:auto;
-            height: 70%;
-            padding: 4px;
-            margin-left:0px;
+        div.queue_display_table
+        {
+            display:inline-block;
+            float:left;
+            width:90%;
+            height:200px;
+            background-color: lightblue;
+            border-style:inset;
+            border-color:black;
+            border-right: 0;
         }
+
 
         div.current_image
         {
@@ -124,8 +128,6 @@
             width: 90%;
             background-color: #ddd;
             margin:10px
-
-
         }
         #myBar {
             height: 30px;
@@ -322,6 +324,12 @@
             50% { opacity: .1; }
             100% { opacity: 1; }
         }
+
+        h3 {
+            position:relative;
+            left:40px;
+        }
+
         </style>
 
         <title> Project CDUD: Crack Detection Using Drones</title>
@@ -427,23 +435,24 @@
                 <input type="number" style="width:75px;" id="num_photos_per_quad"  min="0" max="500" step="1" placeholder="# of Photos" value="1">
                 <br>
                 <br>
-                &ensp;[Lat (DD)]&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;[Long (DD)]
+                [Lat (DD)][Long (DD)]
                 <br>
                 <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Left Limit (DD)</center></div>
-                <input type="number" style="width:40px;" id="left_lat"  min="0" max="500" step="0.001" placeholder="lat" value="0">
-                <input type="number" style="width:40px;" id="left_long"  min="0" max="500" step="0.001" placeholder="long" value="0">
-
-                <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Right Limit (DD)</center></div>
-                <input type="number" style="width:40px;" id="right_lat" min="0" max="500" step="0.001" placeholder="lat" value="0">
-                <input type="number" style="width:40px;" id="right_long" min="0" max="500" step="0.001" placeholder="long" value="0">
+                <input type="number" style="width:80px;" id="left_lat"  min="0" max="500" step="0.001" placeholder="lat" value="0">
+                <input type="number" style="width:80px;" id="left_long"  min="0" max="500" step="0.001" placeholder="long" value="0">
                 <br>
 
+                <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Right Limit (DD)</center></div>
+                <input type="number" style="width:80px;" id="right_lat" min="0" max="500" step="0.001" placeholder="lat" value="0">
+                <input type="number" style="width:80px;" id="right_long" min="0" max="500" step="0.001" placeholder="long" value="0">
+                <br>
+                <br>
                 <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Top Limit (m)</center></div>
-                <input type="number" style="width:40px;" id="top_alt"  min="0" max="500" step="0.001" placeholder="alt" value="0">
+                <input type="number" style="width:80px;" id="top_alt"  min="0" max="500" step="0.001" placeholder="alt" value="0">
                 <br>
 
                 <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Bottom Limit (m)</center></div>
-                <input type="number" style="width:40px;" id="bottom_alt"  min="0" max="500" step="0.001" placeholder="alt" value="0">
+                <input type="number" style="width:80px;" id="bottom_alt"  min="0" max="500" step="0.001" placeholder="alt" value="0">
                 <br>
 
             </div>
@@ -451,24 +460,26 @@
         <br>
         <br>
         <div class="queue_and_options">
-
             <div class="queue_display_table">
-                <center>
+                <h3>
+
+                    <center>Queue Display</center>
+                    <br>
+
+                    <input type="button" id="toggle_recognition_button" value = "Start Recognition" onclick="toggleRecognition()"></input>
+                    <br>
+                    <br>
+
                     <font size="2.5">
                         <div class="table_of_queued_images">
                             <table><tr><th><b>Queued Image</b></th></tr>
-                                <div class="status_window" style="width:240px; background-color: lightyellow; justify-content: start;">No Images in Queue</div>
                             </table>
                         </div>
                     </font>
-                </center>
-            </div>
-            <center>
-                <input type="button" id="toggle_recognition_button" value = "Start Recognition" onclick="toggleRecognition()"></input>
-            </center>
 
+                </h3>
+            </div>
         </div>
-        <div class="placeholder"></div>
 
         <!--<div class="control">
             <div class="drone_control">

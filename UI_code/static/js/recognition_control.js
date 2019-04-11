@@ -20,41 +20,35 @@ function toggleRecognition(){
 function update_queue_table()
 {
     $.get("/get_queued_images",function(returned_data){
-        var table = '<table><tr><th><b>Queued Image</b></th></tr>';
+        var table = '<table><tr><th><b>First 5 Images in Queue</b></th></tr>';
         if (returned_data == "No images in queue"){
+            table += 'No Images in queue';
 
-            table += '<div class="queue_window" style="width:240px; background-color: lightyellow; justify-content: start;">'
-            table += "No Images in Queue";
+            table += '<div class="queue_window" style="width:100px; background-color: lightyellow; justify-content: start;">'
             table += '</div>'
             table += '</table>'
             $("div.table_of_queued_images").html(table);
-
-            var arrayed_results = returned_data.split("|");
-            for (var i = 0, len = arrayed_results.length; i < len; i++) {
-                if (arrayed_results[i] != ""){
-                    var image_path = arrayed_results[i].replace('\\', '/');
-
-                    table +='<tr><th><center><img src="' + image_path + '" style="float:middle;display:inline-block;width:"500";height:"500";"></center></th></tr>';
-
-                }
-            }
-            table += '</table>'
-            $("div.table_of_queued_images").html(table);
-        } else if (returned_data != "No changes to queue"){
+        }
+        else {
             var table = '<table><tr><th><b>Queued Image</b></th></tr>';
-            table += '<div class="queue_window" style="width:240px; background-color: lightyellow; justify-content: start;">'
+            table += '<div class="queue_window" style="width:100px; background-color: lightyellow; justify-content: start;">'
 
             var arrayed_results = returned_data.split("|");
-            for (var i = 0, len = arrayed_results.length; i < len; i++) {
+            var table_length = 5
+            if (arrayed_results.length < 5){
+                table_length = arrayed_results.length
+            }
+            for (var i = 0, len = table_length; i < len; i++) {
                 if (arrayed_results[i] != ""){
                     var image_path = arrayed_results[i].replace('\\', '/');
 
-                    table +='<tr><th><center><img src="' + image_path + '" alt="test" style="float:middle;display:inline-block;width:50%;height:auto;"></center></th></tr>';
+                    table +='<tc><th><center><img src="' + image_path + '" alt="test" style="float:middle;display:table-column;width:100px;height:100px;"></center></th></tc>';
                 }
             }
             table += '</div>'
             table += '</table>'
             $("div.table_of_queued_images").html(table);
         }
+
     });
 }

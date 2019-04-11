@@ -2,23 +2,26 @@ from flask import Flask, render_template, request, jsonify
 
 
 from Interfaces.detection_thread_wrapper import RecognitionThreadWrapper
+from threading import Lock
 from Interfaces.side_and_quadrant_handling.side_object import SideObject
 import webbrowser
 import time
 import os
-
+import glob
 
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
+
 CONFIG_PATH = os.path.join(THIS_FILE_DIR_PATH, "../Interfaces/configs")
+QUEUE_DIR_PATH = os.path.join(OUTPUT_DIRECTORY, "..", "queued_photos")
 QUEUE_FILE_PATH = os.path.join(CONFIG_PATH, "recognition_config", "queue.txt")
 
 result_side = "NO SIDE CHOSEN"
 result_quadrant = "NO QUADRANT CHOSEN"
 
 status_side = "NO SIDE CHOSEN"
-queued_image_paths = []
+queue_of_photos = []
 
 # Main menu
 @app.route('/')
@@ -199,30 +202,31 @@ def get_all_image_data():
     except Exception as e:
         print(e)
 
+
 # Gets all images stored for a give quadrant
 @app.route('/get_queued_images', methods=['GET', 'POST'])
 def get_queued_images():
-    global queued_image_paths
-
+    global queue_of_photos
     return_string = ""
     try:
-        with open(QUEUE_FILE_PATH, "r") as queue_file:
-            queue_file_lines = queue_file.readlines()
+        # Get a list of photos that are not already in the queue
+        queue_dir_snapshot = glob.glob(os.path.join(QUEUE_DIR_PATH, "*.jpg"))
+        queue_of_photos = list(set(queue_dir_snapshot))
+        new_entries = list(set(queue_dir_snapshot) - set(queue_of_photos))
 
-        if queue_file_lines == queued_image_paths:
-            return jsonify("No changes to queue")
-        if queue_file_lines:
-            for line in queue_file_lines:
-                return_string += "{0}|".format(line)
-            queued_image_paths = queue_file_lines
+        queue_of_photos += new_entries
+        # Update the queue
+        if queue_of_photos:
+            for photo_path in queue_of_photos:
+                static_relative_path = photo_path.replace(THIS_FILE_DIR_PATH, "")
 
+                return_string += "{0}|".format(static_relative_path)
             return jsonify(return_string)
         else:
             return jsonify("No images in queue")
 
     except Exception as e:
         return jsonify("No images in queue")
-
 
 @app.route('/add_new_side', methods=['POST'])
 def add_new_side():

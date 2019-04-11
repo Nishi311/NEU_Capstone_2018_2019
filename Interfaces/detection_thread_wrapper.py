@@ -45,7 +45,6 @@ class RecognitionThreadWrapper(object):
         self.unified_module = UnifiedRecognitionModule()
 
         self.recognition_state_file_path = os.path.join(self.RECOGNITION_CONFIG_DIR, "state.txt")
-        self.recognition_queue_file_path = os.path.join(self.RECOGNITION_CONFIG_DIR, "queue.txt")
 
         self.running_recognition = False
 
@@ -163,16 +162,6 @@ class RecognitionThreadWrapper(object):
         new_entries = list(set(queue_dir_snapshot) - set(self.queue_of_photos))
         # Update the queue
         self.queue_of_photos += new_entries
-
-        static_relative_photo_paths = []
-        for photo_path in self.queue_of_photos:
-            UI_Code_relative_path = photo_path.replace(self.THIS_FILE_PATH, "")
-            static_relative_path = UI_Code_relative_path.replace(os.path.join("..", "UI_code", ""), "")
-
-            static_relative_photo_paths.append(static_relative_path)
-        with open(self.recognition_queue_file_path, "w+") as queue_file:
-            for entry in static_relative_photo_paths:
-                queue_file.write("{0}\n".format(entry))
 
     def determine_photo_side_and_quad(self, photo_path):
         photo_lat_dd, photo_long_dd, photo_alt_m = GPSHandler().run_module(photo_path)
