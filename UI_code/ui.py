@@ -21,7 +21,8 @@ result_side = "NO SIDE CHOSEN"
 result_quadrant = "NO QUADRANT CHOSEN"
 
 status_side = "NO SIDE CHOSEN"
-queue_of_photos = []
+recognition_wrapper = RecognitionThreadWrapper()
+
 
 # Main menu
 @app.route('/')
@@ -206,19 +207,14 @@ def get_all_image_data():
 # Gets all images stored for a give quadrant
 @app.route('/get_queued_images', methods=['GET', 'POST'])
 def get_queued_images():
-    global queue_of_photos
+    global recognition_wrapper
     return_string = ""
     try:
-        # Get a list of photos that are not already in the queue
-        queue_dir_snapshot = glob.glob(os.path.join(QUEUE_DIR_PATH, "*.jpg"))
-        queue_of_photos = list(set(queue_dir_snapshot))
-        new_entries = list(set(queue_dir_snapshot) - set(queue_of_photos))
-
-        queue_of_photos += new_entries
-        # Update the queue
+        queue_of_photos = recognition_wrapper.queue_of_photos
         if queue_of_photos:
             for photo_path in queue_of_photos:
-                static_relative_path = photo_path.replace(THIS_FILE_DIR_PATH, "")
+                UI_relative_path = photo_path.replace(recognition_wrapper.THIS_FILE_PATH, "")
+                static_relative_path = UI_relative_path.replace(os.path.join("..", "UI_code", ""), "")
 
                 return_string += "{0}|".format(static_relative_path)
             return jsonify(return_string)
@@ -296,10 +292,8 @@ def main():
 class basic(object):
     @staticmethod
     def run_module():
-        global queued_image_paths
+        global recognition_wrapper
 
-        # TODO: add try catch-block to prevent script from running if error.
-        recognition_wrapper = RecognitionThreadWrapper()
         recognition_wrapper.run_module()
 
         try:

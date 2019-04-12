@@ -117,7 +117,7 @@ class RecognitionThreadWrapper(object):
                 # If the queue is populated, run recognition workflow on top of the queue
                 if self.queue_of_photos:
                     # Pop top of the queue off for recognition
-                    current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos.pop(0))
+                    current_photo = os.path.join(self.THIS_FILE_PATH, self.queue_of_photos[0])
                     current_photo_name = os.path.split(current_photo)[1]
                     side_name, quad_name = self.determine_photo_side_and_quad(current_photo)
                     side_quad_path = os.path.join(side_name, quad_name)
@@ -138,7 +138,7 @@ class RecognitionThreadWrapper(object):
                         os.remove(output_photo_path)
 
                     shutil.move(current_photo, quadrant_photo_output_dir)
-
+                    self.queue_of_photos.pop(0)
                 # Otherwise, wait a second and see if anything new comes up.
                 else:
                     time.sleep(1)
