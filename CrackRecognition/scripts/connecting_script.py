@@ -9,6 +9,7 @@ from CrackRecognition.scripts.image_breakdown import ImageBreakdownModule
 from CrackRecognition.scripts.recognition_script import RecognitionModule
 from Interfaces.side_and_quadrant_handling.gps_handler import GPSHandler
 
+
 class UnifiedRecognitionModule(object):
 
     # Absolute path to the directory containing this file. Allows relative paths to be preserved
@@ -22,10 +23,10 @@ class UnifiedRecognitionModule(object):
     DEFAULT_HEIGHT = 227
 
     # Default graph that will be used to detect cracks.
-    DEFAULT_GRAPH_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "retrained_model", "model_2_graph.pb")
+    DEFAULT_GRAPH_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "model_storage", "mixed_model", "mixed_model_graph.pb")
 
     # Default label set that will be used to label detection results.
-    DEFAULT_LABEL_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "retrained_model", "model_2_labels.txt")
+    DEFAULT_LABEL_FILEPATH = os.path.join(THIS_FILE_PATH, "..", "model_storage", "mixed_model", "mixed_model_labels.txt")
 
     # location of the output directory relative to this script
     OUTPUT_PATH = os.path.join(THIS_FILE_PATH, "..", "output")
@@ -61,6 +62,7 @@ class UnifiedRecognitionModule(object):
         self.final_reports_dir = self.DEFAULT_FINAL_REPORT_FILEPATH
         self.final_reports_sub_dir = self.final_reports_dir
         # Variables related to image recognition
+        self.num_sub_reports_for_pos_total = 1
         self.percentage_threshold = 0.3
         self.graph_filepath = self.DEFAULT_GRAPH_FILEPATH
 
@@ -352,18 +354,18 @@ class UnifiedRecognitionModule(object):
             final_report_file.write("Coordinates(Lat, Long, Alt): ({0}, {1}, {2})\n".format(image_lat, image_long,
                                                                                             image_alt))
 
-            if positive_report_list:
+            if len(positive_report_list) >= self.num_sub_reports_for_pos_total:
                 final_report_file.write("Crack Detected: Positive\n")
             else:
                 final_report_file.write("Crack Detected: Negative\n")
-
-            final_report_file.write("Neg > Pos Image count: {0}\n".format(len(negative_report_list)))
-            final_report_file.write("Neg > Pos Image reports: \n")
+            final_report_file.write("Pos Threshold: {0}\n".format(self.percentage_threshold))
+            final_report_file.write("Confidence < Pos Threshold Image count: {0}\n".format(len(negative_report_list)))
+            final_report_file.write("Confidence < Pos Threshold Image reports: \n")
             for report in negative_report_list:
                 final_report_file.write("{0}".format(report))
 
-            final_report_file.write("Pos > Neg Image count: {0}\n".format(len(positive_report_list)))
-            final_report_file.write("Pos > Neg Image reports: \n")
+            final_report_file.write("Confidence > Pos Threshold Image count: {0}\n".format(len(positive_report_list)))
+            final_report_file.write("Confidence > Pos Threshold Image reports: \n")
             for report in positive_report_list:
                 final_report_file.write("{0}".format(report))
 

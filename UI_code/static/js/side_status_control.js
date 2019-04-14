@@ -10,8 +10,8 @@ var completed_quads_for_side = 0
 
 $(document).on("click", "div.grid-item", function() {
 
+    var side_name = $(this).attr("side");
     var quadrant_name = $(this).attr("id");
-
     var lat_limit_left = $(this).attr("lat_limit_left");
     var long_limit_left = $(this).attr("long_limit_left");
 
@@ -21,7 +21,7 @@ $(document).on("click", "div.grid-item", function() {
     var top_limit = $(this).attr("top_limit");
     var bottom_limit = $(this).attr("bottom_limit");
 
-    var str = quadrant_name + "\n\n"
+    var str = side_name + ": " + quadrant_name + "\n\n"
     str += "Decimal Degree Format: (Latitude, Longitude, Altitude)\n\n"
     str += "Top Left Coordinate: (" + lat_limit_left + ", " + long_limit_left + ", " + top_limit + ")\n";
     str += "Top Right Coordinate: (" + lat_limit_right + ", " + long_limit_right + ", " + top_limit + ")\n";
@@ -94,12 +94,12 @@ function update_side_status_grid(){
                     var current_quad_bottom = current_quad_value_array[7];
 
                     if (current_quad_status == "COMPLETE"){
-                        quadrant_grid +='<div class="grid-item examined" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        quadrant_grid +='<div class="grid-item examined" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
                         completed_quads_for_side++;
                     } else if (current_quad_status == "IN PROGRESS"){
-                        quadrant_grid +='<div class="grid-item examined-next" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        quadrant_grid +='<div class="grid-item examined-next" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
                     } else{
-                        quadrant_grid +='<div class="grid-item" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        quadrant_grid +='<div class="grid-item" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
                     }
                     current_cell_num++;
                 }
@@ -132,7 +132,7 @@ function update_side_status_bar()
         $("#myBar").css( "width", progress_width);
         $("#myBar").text(progress_percent);
     } else {
-        $("#myBar").css( "width", "100%");
+        $("#myBar").css( "width", "0%");
         $("#myBar").text("0%");
     }
 }

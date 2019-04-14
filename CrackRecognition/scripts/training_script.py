@@ -1149,7 +1149,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_graph',
       type=str,
-      default='/tmp/crack_detection_graph.pb',
+      default='/tmp/mixed_model_graph.pb',
       help='Where to save the trained graph.'
   )
   parser.add_argument(
@@ -1170,7 +1170,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--output_labels',
       type=str,
-      default='/tmp/crack_detection_labels.txt',
+      default='/tmp/mixed_model_labels.txt',
       help='Where to save the trained graph\'s labels.'
   )
   parser.add_argument(
@@ -1263,7 +1263,7 @@ if __name__ == '__main__':
   )
   parser.add_argument(
       '--flip_left_right',
-      default=False,
+      default=True,
       help="""\
       Whether to randomly flip half of the training images horizontally.\
       """,
@@ -1272,7 +1272,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--random_crop',
       type=int,
-      default=0,
+      default=5,
       help="""\
       A percentage determining how much of a margin to randomly crop off the
       training images.\
@@ -1281,7 +1281,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--random_scale',
       type=int,
-      default=0,
+      default=5,
       help="""\
       A percentage determining how much to randomly scale up the size of the
       training images by.\
@@ -1290,7 +1290,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--random_brightness',
       type=int,
-      default=0,
+      default=5,
       help="""\
       A percentage determining how much to randomly multiply the training image
       input pixels up or down by.\

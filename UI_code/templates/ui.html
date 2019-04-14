@@ -380,7 +380,7 @@
                 <center><font size="5">Quick Look</font></center>
                 <center>
                     <div class="image_view">
-                        <center><img class="quick_image" src="https://www.boma.org/images/homePage/windyPoint.png" alt="test"></center>
+                        <center><img class="quick_image"></center>
                     </div>
                 </center>
             </div>
@@ -416,6 +416,7 @@
                         <!--<button onclick="NA';">Display Building Outline</button>
                         <button onclick="NA';">Toggle GPS Points</button>-->
                         <button id="add_side">Add Side</button>
+
                         <div class="dropdown">
                             <button class="dropbtn">Choose New Side</button>
                             <div class="status_dropdown_content" id="status_dropdown_content"></div>
@@ -434,7 +435,7 @@
                 <input type="number" style="width:75px;" id="num_photos_per_quad"  min="0" max="500" step="1" placeholder="# of Photos" value="1">
                 <br>
                 <br>
-                [Lat (DD)][Long (DD)]
+                &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;[Lat (DD)]&emsp;[Long (DD)]
                 <br>
                 <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Left Limit (DD)</center></div>
                 <input type="number" style="width:80px;" id="left_lat"  min="0" max="500" step="0.001" placeholder="lat" value="0">
@@ -453,7 +454,6 @@
                 <div style="display:inline-block; background-color: lightgrey; width:90px; border: 1px solid black;"><center>Bottom Limit (m)</center></div>
                 <input type="number" style="width:80px;" id="bottom_alt"  min="0" max="500" step="0.001" placeholder="alt" value="0">
                 <br>
-
             </div>
         </div>
         <br>
@@ -467,6 +467,14 @@
 
                     <input type="button" id="toggle_recognition_button" value = "Start Recognition" onclick="toggleRecognition()"></input>
                     <br>
+                    <br>
+
+                    <div style="display:inline-block; background-color: lightgrey; width:180px; border: 1px solid black;"><center>Sub-Image size (px)</center></div>
+                    <input type="number" style="width:80px;" id="sub_image_height"  min="0" max="1500" step="1" placeholder="1000" value="1000">
+                    <input type="number" style="width:80px;" id="sub_image_width"  min="0" max="1500" step="1" placeholder="1000" value="1000">
+
+                    <div style="display:inline-block; background-color: lightgrey; width:200px; border: 1px solid black;"><center>Positive Threshold (%)</center></div>
+                    <input type="number" style="width:80px;" id="pos_threshold"  min="0" max="100" step="1" placeholder="80" value="80">
                     <br>
 
                     <font size="2.5">

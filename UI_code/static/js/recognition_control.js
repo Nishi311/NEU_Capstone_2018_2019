@@ -1,18 +1,28 @@
 setInterval("update_queue_table();", 1000);
 
-var queue_directory = "static/generalIO/queue"
+var queue_directory = "static/generalIO/queue";
+var recognition_in_progress = false;
 
 function toggleRecognition(){
     var toggle_text = document.getElementById("toggle_recognition_button").value;
     var new_toggle_text = "";
 
+
+    var sub_image_width = document.getElementById("sub_image_width").value;
+    var sub_image_height = document.getElementById("sub_image_height").value;
+    var pos_threshold = document.getElementById("pos_threshold").value;
+
     if (toggle_text=="Start Recognition"){
         new_toggle_text = "End Recognition";
-        $.post("/toggle_recognition",{new_state:"ACTIVE"});
+        recognition_in_progress = true;
+        $.post("/toggle_recognition",{new_state:"ACTIVE", "sub_image_width":sub_image_width,
+                                      "sub_image_height": sub_image_height, "pos_threshold":pos_threshold});
 
     } else if (toggle_text =="End Recognition"){
         new_toggle_text = "Start Recognition";
+        recognition_in_progress = false;
         $.post("/toggle_recognition",{new_state:"INACTIVE"});
+
     }
     document.getElementById("toggle_recognition_button").value=new_toggle_text;
 }
@@ -26,6 +36,7 @@ function update_queue_table()
 
             table += '<div class="queue_window" style="width:100px; background-color: lightyellow; justify-content: start;">'
             table += '</div>'
+
             table += '</table>'
             $("div.table_of_queued_images").html(table);
         }

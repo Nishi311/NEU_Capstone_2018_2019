@@ -84,9 +84,10 @@ class RecognitionThreadWrapper(object):
         # Sets up the module to run single-file recognition
         self.unified_module.is_input_dir = False
         self.unified_module.skip_parse_args = True
-
-        self.unified_module.cropped_px_height = 1000
-        self.unified_module.cropped_px_width = 1000
+        #
+        # self.unified_module.cropped_px_height = 1250
+        # self.unified_module.cropped_px_width = 1250
+        # self.unified_module.percentage_threshold = 0.8
 
     def setup_recognition_config(self):
         """
@@ -108,7 +109,7 @@ class RecognitionThreadWrapper(object):
         while True:
 
             # Run continual checks for new states or sides.
-            self.check_and_update_recognition_state()
+            # self.check_and_update_recognition_state()
             self.side_handler.check_for_new_sides()
             self.check_and_update_queue()
 

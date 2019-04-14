@@ -123,7 +123,8 @@ def get_quadrants_list():
                     return jsonify(dirs)
                 else:
                     return jsonify("No quadrants found")
-        except Exception as e:
+                break
+        except SystemError as e:
             return jsonify("No quadrants found")
     else:
         return jsonify("No quadrants found")
@@ -273,11 +274,28 @@ def get_side_status():
 
 @app.route('/toggle_recognition', methods=['POST'])
 def toggle_recognition():
-    recognition_state_path = os.path.join(CONFIG_PATH, "recognition_config", "state.txt")
-    new_state = request.form['new_state']
+    global recognition_wrapper
 
-    with open(recognition_state_path, "w+") as state_file:
-        state_file.write(new_state)
+    # recognition_state_path = os.path.join(CONFIG_PATH, "recognition_config", "state.txt")
+    new_state = request.form['new_state']
+    if new_state == "ACTIVE":
+
+        sub_image_width = int(request.form['sub_image_width'])
+        sub_image_height = int(request.form['sub_image_height'])
+        pos_threshold = float(request.form['pos_threshold'])/100
+
+        recognition_wrapper.unified_module.cropped_px_width = sub_image_width
+        recognition_wrapper.unified_module.cropped_px_height = sub_image_height
+        recognition_wrapper.unified_module.percentage_threshold = pos_threshold
+
+        recognition_wrapper.running_recognition = True
+    else:
+        recognition_wrapper.running_recognition = False
+
+
+    #
+    # with open(recognition_state_path, "w+") as state_file:
+    #     state_file.write(new_state)
     return jsonify("SUCCESS")
 
 # Opens the program to the main menu.
