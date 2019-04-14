@@ -88,15 +88,21 @@ function update_side_status_grid(){
 
                     var current_quad_name = current_quad_value_array[0];
                     var current_quad_status = current_quad_value_array[1];
-                    var current_quad_left_lat = current_quad_value_array[2];
-                    var current_quad_left_long = current_quad_value_array[3];
-                    var current_quad_right_lat = current_quad_value_array[4];
-                    var current_quad_right_long = current_quad_value_array[5];
-                    var current_quad_top = current_quad_value_array[6];
-                    var current_quad_bottom = current_quad_value_array[7];
+                    var current_quad_cracks_detected = current_quad_value_array[2];
+
+                    var current_quad_left_lat = current_quad_value_array[3];
+                    var current_quad_left_long = current_quad_value_array[4];
+                    var current_quad_right_lat = current_quad_value_array[5];
+                    var current_quad_right_long = current_quad_value_array[6];
+                    var current_quad_top = current_quad_value_array[7];
+                    var current_quad_bottom = current_quad_value_array[8];
 
                     if (current_quad_status == "COMPLETE"){
-                        quadrant_grid +='<div class="grid-item examined" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        if (current_quad_cracks_detected == "TRUE"){
+                            quadrant_grid +='<div class="grid-item examined-crack" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        } else{
+                            quadrant_grid +='<div class="grid-item examined-no-crack" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';
+                        }
                         completed_quads_for_side++;
                     } else if (current_quad_status == "IN PROGRESS"){
                         quadrant_grid +='<div class="grid-item examined-next" side="' + selected_status_side + '" id="' + current_quad_name + '" lat_limit_left="' + current_quad_left_lat+ '" long_limit_left="' + current_quad_left_long + '" lat_limit_right="' + current_quad_right_lat + '" long_limit_right="' + current_quad_right_long+ '" top_limit="' + current_quad_top + '" bottom_limit="' + current_quad_bottom + '"></div>';

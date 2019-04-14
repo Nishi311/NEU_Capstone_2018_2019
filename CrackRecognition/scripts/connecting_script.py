@@ -104,7 +104,7 @@ class UnifiedRecognitionModule(object):
         else:
             # Run the breakdown (if required), recognition and breakdown report parsing (if required) for the single
             # file that the ENTIRE SYSTEM IS SPECIFIED TO RUN.
-            self.single_photo_workflow(self.input_filepath)
+            return self.single_photo_workflow(self.input_filepath)
 
     def set_args(self):
         """
@@ -210,8 +210,9 @@ class UnifiedRecognitionModule(object):
                 os.makedirs(photo_report_filepath)
 
             # Run breakdown and breakdown report parsing workflow.
-            self.breakdown_and_recognize_image(photo_file_path, photo_report_filepath,
-                                               self.final_reports_sub_dir)
+            return self.breakdown_and_recognize_image(photo_file_path, photo_report_filepath,
+                                                      self.final_reports_sub_dir)
+
         else:
             # If NOT doing breakdown, then just set the recognition module's input / output and run.
             self.recognition_module.input_filepath = self.input_filepath
@@ -225,6 +226,8 @@ class UnifiedRecognitionModule(object):
         :param photo_path: Absolute path to the original image that needs to be broken down.
         :param breakdown_report_path: Absolute path to the location where sub-image reports should be stored.
         :param final_report_path: Absolute path to the location where the final overall report should be stored
+        :return (bool) -> True if crack detected.
+                          False if crack not detected.
         """
         # Setup breakdown module to run on the given photo
         breakdown_args = self.setup_image_breakdown_arguments(photo_path)
@@ -249,7 +252,7 @@ class UnifiedRecognitionModule(object):
         # parse the resulting sub-reports into one single report for the image.
         image_lat, image_long, image_alt = GPSHandler().run_module(photo_path)
 
-        self.sub_report_parser(breakdown_report_path, final_report_path, image_lat, image_long, image_alt)
+        return self.sub_report_parser(breakdown_report_path, final_report_path, image_lat, image_long, image_alt)
 
     def setup_image_breakdown_arguments(self, input_filepath):
         """
@@ -319,6 +322,8 @@ class UnifiedRecognitionModule(object):
         :param image_lat: The latitude (in Decimal Degree) where the photo was taken
         :param image_long: the longitude (in Decimal Degree) where the photo was taken
         :param image_alt: the altitude (in Decimal Degree) where the photo was taken
+        :return bool: True -> If crack detected
+                      False -> If crack not detected
         """
 
         if os.path.exists(breakdown_report_dir):
@@ -348,13 +353,15 @@ class UnifiedRecognitionModule(object):
                     positive_report_list.append(sub_report_name)
                 # Create the final report for the image, listing the number of neg > pos sub-images
                 # and pos > neg sub-images.
-
-            final_report_file = open(os.path.join(final_report_dir, report_name + "_final_report.txt"), "w+")
+            final_report_file_path = os.path.join(final_report_dir, report_name + "_final_report.txt")
+            final_report_file = open(final_report_file_path, "w+")
             final_report_file.write("Name: {0}\n".format(report_name))
             final_report_file.write("Coordinates(Lat, Long, Alt): ({0}, {1}, {2})\n".format(image_lat, image_long,
                                                                                             image_alt))
 
-            if len(positive_report_list) >= self.num_sub_reports_for_pos_total:
+            crack_detected = True if len(positive_report_list) >= self.num_sub_reports_for_pos_total else False
+
+            if crack_detected:
                 final_report_file.write("Crack Detected: Positive\n")
             else:
                 final_report_file.write("Crack Detected: Negative\n")
@@ -370,6 +377,9 @@ class UnifiedRecognitionModule(object):
                 final_report_file.write("{0}".format(report))
 
             final_report_file.close()
+
+            return crack_detected
+
         else:
             self.exit_with_error_msg("connecting_script, sub_report_parser(): breakdown_report_dir {0} does not "
                                      "exist! Exiting".format(breakdown_report_dir))

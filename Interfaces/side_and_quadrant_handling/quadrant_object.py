@@ -13,6 +13,8 @@ class Quadrant(object):
 
         self.current_status = StatusValues.NOT_STARTED
 
+        self.cracks_detected = False
+
         self.num_photos_per_quad = 0
 
         self.coord_dict = {"left_latitude_DD": 0,
@@ -52,6 +54,9 @@ class Quadrant(object):
 
         self.report_output_dir = os.path.join(self.RELATIVE_FINISHED_REPORT_DIR, self._side_name, self.quadrant_name)
 
+    def set_quadrant_detected(self, crack_detected_bool):
+        self.cracks_detected = crack_detected_bool
+
     def parse_js_string(self, js_string, num_photos_per_quad):
         """
         Parses the given refined JS string and sets the parameters of the object.
@@ -84,13 +89,15 @@ class Quadrant(object):
                            "Quadrant 56" lat_limit_left="1" long_limit_left="1" lat_limit_right="1.07"
                            long_limit_right="1.07" top_limit="5" bottom_limit="1"
         """
-        name_string, num_photos_on = config_string.split("Num_Photos: ")
+        name_string, detected_on = config_string.split("Cracks Detected: ")
+        detected_string, num_photos_on = detected_on.split("Num_Photos: ")
         num_photos, left_limit_on = num_photos_on.split("Left_Limit (DD): ")
         left_limit, right_limit_on = left_limit_on.split("Right_Limit (DD):")
         right_limit, top_limit_on = right_limit_on.split("Top_Limit (m): ")
         top_limit, bottom_limit = top_limit_on.split("Bottom_Limit (m): ")
 
         self.quadrant_name = name_string.rstrip(' ')
+        self.cracks_detected = True if detected_string.rstrip(' ') == "TRUE" else False
         self.num_photos_per_quad = int(num_photos)
         self.coord_dict["left_latitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[0])
         self.coord_dict["left_longitude_DD"] = float(left_limit.replace('(', '').replace(')', '').replace(' ', '').split(",")[1])
@@ -105,15 +112,13 @@ class Quadrant(object):
         (in Decimal Degree) and top and bottom altitude limits (in meters)
         :return: (String): Result string.
         """
-        output_string = "Quadrant Name: {0}\nNum_Photos: {1}\nLeft_Limit (DD): ({2}, {3})\nRight_Limit (DD): ({4}, {5})\nTop_Limit (m): " \
-                        "{6}\nBottom_Limit (m): {7}\n\n".format(self.quadrant_name,
-                                                                self.num_photos_per_quad,
-                                                                self.coord_dict["left_latitude_DD"],
-                                                                self.coord_dict["left_longitude_DD"],
-                                                                self.coord_dict["right_latitude_DD"],
-                                                                self.coord_dict["right_longitude_DD"],
-                                                                self.coord_dict["top_altitude_Meters"],
-                                                                self.coord_dict["bottom_altitude_Meters"])
+        detected_string = "TRUE" if self.cracks_detected else "FALSE"
+        output_string = "Quadrant Name: {0}\nCracks Detected: {1}\nNum_Photos: {2}\nLeft_Limit (DD): ({3}, {4})\n" \
+                        "Right_Limit (DD): ({5}, {6})\nTop_Limit (m): {7}\nBottom_Limit (m): {8}\n" \
+                        "\n".format(self.quadrant_name, detected_string, self.num_photos_per_quad,
+                                    self.coord_dict["left_latitude_DD"], self.coord_dict["left_longitude_DD"],
+                                    self.coord_dict["right_latitude_DD"], self.coord_dict["right_longitude_DD"],
+                                    self.coord_dict["top_altitude_Meters"], self.coord_dict["bottom_altitude_Meters"])
         return output_string
 
     def check_coordinates(self, lat, long, alt):
@@ -152,15 +157,32 @@ class Quadrant(object):
         :return: (StatusValue): StatusValue corresponding to the quadrant's state.
         """
         try:
-            list_of_completed_reports = os.listdir(self.photo_output_dir)
-            if len(list_of_completed_reports) == self.num_photos_per_quad:
-                return StatusValues.COMPLETE
-            elif len(list_of_completed_reports) > 0:
-                return StatusValues.IN_PROGRESS
+            completed_report_names = os.listdir(self.report_output_dir)
+            completed_report_paths = []
+
+            for name in completed_report_names:
+                completed_report_paths.append(os.path.join(self.report_output_dir, name))
+
+            contains_crack_string = "FALSE"
+            if len(completed_report_paths) == self.num_photos_per_quad:
+                for report in completed_report_paths:
+                    success_line = ""
+                    with open(report, "r") as report_file:
+                        throw_away_name_line = report_file.readline()
+                        throw_away_coord_line = report_file.readline()
+                        success_line = report_file.readline()
+
+                    if "Positive" in success_line:
+                        contains_crack_string = "TRUE"
+                        break
+
+                return StatusValues.COMPLETE, contains_crack_string
+            elif len(completed_report_paths) > 0:
+                return StatusValues.IN_PROGRESS, contains_crack_string
             else:
-                return StatusValues.NOT_STARTED
+                return StatusValues.NOT_STARTED, contains_crack_string
         except Exception:
-            return StatusValues.NOT_STARTED
+            return StatusValues.NOT_STARTED, contains_crack_string
 
     @staticmethod
     def range_check(left_coord, right_coord, checking_coord):

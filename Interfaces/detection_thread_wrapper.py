@@ -53,7 +53,7 @@ class RecognitionThreadWrapper(object):
         Governing function for the entire class. Will start a new thread dedicated to checking queue directory for new
         images and running recognition on them and spitting out results. Will poll for new images once a second.
         """
-        self.wipe_previous_directories()
+        # self.wipe_previous_directories()
 
         self.setup_recognition_config()
         self.unified_module_setup()
@@ -109,7 +109,6 @@ class RecognitionThreadWrapper(object):
         while True:
 
             # Run continual checks for new states or sides.
-            # self.check_and_update_recognition_state()
             self.side_handler.check_for_new_sides()
             self.check_and_update_queue()
 
@@ -127,7 +126,9 @@ class RecognitionThreadWrapper(object):
                     self.unified_module.input_filepath = current_photo
                     self.unified_module.final_reports_sub_dir = os.path.join(self.unified_module.final_reports_dir,
                                                                              side_quad_path)
-                    self.unified_module.run_module()
+                    crack_detected = self.unified_module.run_module()
+
+                    self.side_handler.update_quadrant_results(side_name, quad_name, crack_detected)
 
                     # Move finished photo out of the queue directory and into the finished directory
                     quadrant_photo_output_dir = os.path.join(self.photo_output_dir, side_quad_path)
@@ -143,14 +144,6 @@ class RecognitionThreadWrapper(object):
                 # Otherwise, wait a second and see if anything new comes up.
                 else:
                     time.sleep(1)
-
-    def check_and_update_recognition_state(self):
-        with open(self.recognition_state_file_path) as state_file:
-            state_line = state_file.readline()
-        if state_line == "ACTIVE":
-            self.running_recognition = True
-        else:
-            self.running_recognition = False
 
     def check_and_update_queue(self):
         """
@@ -183,7 +176,7 @@ class RecognitionThreadWrapper(object):
         if not os.path.exists(self.final_report_output_dir):
             os.makedirs(self.final_report_output_dir)
         
-        if self.side_handler.side_list:
+        if self.side_handler.side_dict:
             self.side_handler.create_all_side_dirs()
 
     # Thanks to https://www.pythoncentral.io/hashing-files-with-python/

@@ -19,9 +19,9 @@ class SideObject(object):
 
         self.side_dir = os.path.join(self.THIS_FILE_PATH, "..", "configs", "side_configs", side_name)
         self.side_config_path = os.path.join(self.side_dir, self.CONFIG_FILE_NAME)
-        self.quadrant_list = []
+        self.quadrant_dict = {}
 
-    def write_quadrants_to_config(self, raw_js_string, num_photos_per_quad, num_rows, num_columns):
+    def write_quadrants_to_config_from_js(self, raw_js_string, num_photos_per_quad, num_rows, num_columns):
         """
         Takes a raw JS string and writes the values to a configuration file in the Interfaces/config directory
         :param raw_js_string: (string) -> Raw Javascript string from the UI
@@ -37,10 +37,13 @@ class SideObject(object):
 
         self.parse_raw_js_input(raw_js_string, num_photos_per_quad)
 
+        self.write_quadrants_to_config_from_internal()
+
+    def write_quadrants_to_config_from_internal(self):
         with open(self.side_config_path, "w") as config_file:
-            config_file.write("Rows: {0}\nColumns: {1}\n\n".format(num_rows, num_columns))
-            for quadrant in self.quadrant_list:
-                config_file.write(quadrant.generate_string())
+            config_file.write("Rows: {0}\nColumns: {1}\n\n".format(self.num_rows, self.num_columns))
+            for quadrant_name, quadrant_object in self.quadrant_dict.items():
+                config_file.write(quadrant_object.generate_string())
 
     def read_quadrants_from_config(self):
         """
@@ -93,14 +96,14 @@ class SideObject(object):
             refined_quad_strings.append(raw_quad_string.split("></div>")[0])
 
         # Create a list of quadrant objects for easy use.
-        quadrant_objects = []
+        quadrant_objects = {}
         for refined_quad_string in refined_quad_strings:
             new_quad_object = Quadrant()
             new_quad_object.side_name = self.side_name
             new_quad_object.parse_js_string(refined_quad_string, num_photos_per_quad)
-            quadrant_objects.append(new_quad_object)
+            quadrant_objects[new_quad_object.quadrant_name] = new_quad_object
 
-        self.quadrant_list = quadrant_objects
+        self.quadrant_dict = quadrant_objects
 
     def parse_raw_config_input(self, raw_config_input):
         """
@@ -123,15 +126,15 @@ class SideObject(object):
 
         refined_quad_strings = super_string.split("Quadrant Name: ")
         refined_quad_strings.pop(0)
-        quadrant_objects = []
+        quadrant_objects = {}
         for refined_quad_string in refined_quad_strings:
             new_quad_object = Quadrant()
             new_quad_object.parse_config_string(refined_quad_string)
             new_quad_object.side_name = self.side_name
 
-            quadrant_objects.append(new_quad_object)
+            quadrant_objects[new_quad_object.quadrant_name] = new_quad_object
 
-        self.quadrant_list = quadrant_objects
+        self.quadrant_dict = quadrant_objects
 
     def determine_quadrant_from_coords(self, lat, long, alt):
         """
@@ -142,10 +145,10 @@ class SideObject(object):
         :param alt: Altitude to check (Meters)
         :return: (String) -> The name of the quadrant (if found). Otherwise returns False.
         """
-        for quadrant in self.quadrant_list:
-            if isinstance(quadrant, Quadrant):
-                if quadrant.check_coordinates(lat, long, alt):
-                    return quadrant.quadrant_name
+        for quadrant_name, quadrant_object in self.quadrant_dict.items():
+            if isinstance(quadrant_object, Quadrant):
+                if quadrant_object.check_coordinates(lat, long, alt):
+                    return quadrant_object.quadrant_name
 
         return False
 
@@ -153,9 +156,9 @@ class SideObject(object):
         """
         Creates all the output directories necessary for the side.
         """
-        for quadrant in self.quadrant_list:
-            if isinstance(quadrant, Quadrant):
-                quadrant.create_output_directories()
+        for quadrant_name, quadrant_object in self.quadrant_dict.items():
+            if isinstance(quadrant_object, Quadrant):
+                quadrant_object.create_output_directories()
 
     def check_and_return_all_quadrant_statuses_string(self):
         """
@@ -164,14 +167,14 @@ class SideObject(object):
         """
         quadrant_status_string = ""
 
-        for quadrant in self.quadrant_list:
-            quadrant_status = quadrant.check_and_return_status()
-            quadrant_status_string += "?{0},{1},{2},{3},{4},{5},{6},{7}" .format(quadrant.quadrant_name, quadrant_status,
-                                                                                 quadrant.coord_dict["left_latitude_DD"],
-                                                                                 quadrant.coord_dict["left_longitude_DD"],
-                                                                                 quadrant.coord_dict["right_latitude_DD"],
-                                                                                 quadrant.coord_dict["right_longitude_DD"],
-                                                                                 quadrant.coord_dict["top_altitude_Meters"],
-                                                                                 quadrant.coord_dict["bottom_altitude_Meters"])
+        for quadrant_name, quadrant_object in self.quadrant_dict.items():
+            quadrant_status, cracks_detected = quadrant_object.check_and_return_status()
+            quadrant_status_string += "?{0},{1},{2},{3},{4},{5},{6},{7},{8}" .format(quadrant_object.quadrant_name, quadrant_status,
+                                                                                     cracks_detected, quadrant_object.coord_dict["left_latitude_DD"],
+                                                                                     quadrant_object.coord_dict["left_longitude_DD"],
+                                                                                     quadrant_object.coord_dict["right_latitude_DD"],
+                                                                                     quadrant_object.coord_dict["right_longitude_DD"],
+                                                                                     quadrant_object.coord_dict["top_altitude_Meters"],
+                                                                                     quadrant_object.coord_dict["bottom_altitude_Meters"])
 
         return quadrant_status_string
