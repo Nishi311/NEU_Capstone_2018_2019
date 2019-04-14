@@ -52,7 +52,6 @@ function update_queue_table()
             for (var i = 0, len = table_length; i < len; i++) {
                 if (arrayed_results[i] != ""){
                     var image_path = arrayed_results[i].replace('\\', '/');
-
                     table +='<tc><th><center><img src="' + image_path + '" alt="test" style="float:middle;display:table-column;width:100px;height:100px;"></center></th></tc>';
                 }
             }

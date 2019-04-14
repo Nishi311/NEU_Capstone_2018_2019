@@ -237,7 +237,7 @@ def add_new_side():
     side_object.write_quadrants_to_config(grid_data, num_photos_per_quad, num_rows, num_columns)
     side_object.create_side_dirs()
 
-    return "And Hello to you too"
+    return jsonify(new_side_name)
 
 def get_num_sides():
     path = os.path.join(OUTPUT_DIRECTORY, "finished_reports")

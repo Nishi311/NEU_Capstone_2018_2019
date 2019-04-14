@@ -200,8 +200,10 @@ $(document).on("click", "#add_side", function() {
     $("div.grid-wrapper").attr("data-total-number",rows*quad_side_meters);
     $("div.building_image").scrollTop = $("div.building_image").scrollHeight;
 
-    $.post("/add_new_side", {grid_data: quadrant_grid, num_photos_per_quad:num_photos_per_quad, num_columns:columns, num_rows:rows});
-
+    $.post("/add_new_side", {grid_data: quadrant_grid, num_photos_per_quad:num_photos_per_quad, num_columns:columns, num_rows:rows}, function(new_side_name){
+        $(".building_display h2").html("Side Under Examination: " + new_side_name);
+        selected_status_side = new_side_name;
+    });
     document.getElementById("right_lat").value = "0";
     document.getElementById("right_long").value = "0";
     document.getElementById("left_lat").value = "0";

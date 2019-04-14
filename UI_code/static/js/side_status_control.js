@@ -55,6 +55,8 @@ function select_new_status_side(new_side){
 
         completed_quads_for_side = 0
         total_quads_for_selected_side = 0
+
+        $(".building_display h2").html("Side Under Examination: " + new_side);
     });
 }
 
