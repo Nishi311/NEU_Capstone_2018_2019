@@ -31,6 +31,58 @@ $(document).on("click", "div.grid-item", function() {
     alert(str);
 });
 
+$(document).on("click", "input#building_submit", function() {
+    alert("EEEEEK")
+    var north_south_east;
+    var north_south_west;
+    var east_west_north;
+    var east_west_south;
+
+    var val = $("#building_info").val()
+    $.post("/auto_building_sides",
+    {
+        direction: val
+    });
+    var dropdown = '';
+    try {
+        $.get("/auto_building_sides",function(data){
+            north_south_east = [data['northeast']['lat'],data['southwest']['lng'],data['northeast']['lat'],data['northeast']['lng']];
+            north_south_west = [data['southwest']['lat'],data['southwest']['lng'],data['southwest']['lat'],data['northeast']['lng']];
+            east_west_north = [data['southwest']['lat'],data['northeast']['lng'],data['northeast']['lat'],data['northeast']['lng']];
+            east_west_south = [data['southwest']['lat'],data['southwest']['lng'],data['northeast']['lat'],data['southwest']['lng']];
+
+            dropdown += '<a href="#" onclick=\"update_lat_long(\'' + north_south_east + '\');\">north, south, east</a>';
+            dropdown += '<a href="#" onclick=\"update_lat_long(\'' + north_south_west + '\');\">north, south, east</a>';
+            dropdown += '<a href="#" onclick=\"update_lat_long(\'' + east_west_north + '\');\">east, west, north</a>';
+            dropdown += '<a href="#" onclick=\"update_lat_long(\'' + east_west_south + '\');\">east, west, south</a>';
+
+            $("a#side_dropdown_content").html(dropdown);
+        });
+    }
+    catch(err) {
+        north_south_east = [0,0,0,0];
+        north_south_west = [0,0,0,0];
+        east_west_north = [0,0,0,0];
+        east_west_south = [0,0,0,0];
+
+        dropdown += '<a href="#" onclick=\"update_lat_long(\'' + north_south_east + '\');\">north, south, east</a>';
+        dropdown += '<a href="#" onclick=\"update_lat_long(\'' + north_south_west + '\');\">north, south, east</a>';
+        dropdown += '<a href="#" onclick=\"update_lat_long(\'' + east_west_north + '\');\">east, west, north</a>';
+        dropdown += '<a href="#" onclick=\"update_lat_long(\'' + east_west_south + '\');\">east, west, south</a>';
+
+        $("a#side_dropdown_content").html(dropdown);
+    }
+});
+
+
+function update_lat_long(side){
+    var coord_array = side.split(',')
+    $("input#left_lat").val(coord_array[0])
+    $("input#left_long").val(coord_array[1])
+    $("input#right_lat").val(coord_array[2])
+    $("input#right_long").val(coord_array[3])
+}
+
 function update_status_side_selected(){
     $.get("/get_sides_list",function(data){
         var dropdown = '';
