@@ -10,12 +10,12 @@ class ValidationModule(object):
     NEGATIVE_STRING = "Negative"
 
     CLASS_REPORT_DESIGNATION_STRING = "final_report"
-    CLASS_REPORT_NEG_STRING = "Neg > Pos Image count:"
-    CLASS_REPORT_POS_STRING = "Pos > Neg Image count:"
+    CLASS_REPORT_NEG_STRING = "Confidence < Pos Threshold Image count:"
+    CLASS_REPORT_POS_STRING = "Confidence > Pos Threshold Image count:"
     CLASS_REPORT_NAME_STRING = "Name:"
 
     FINAL_REPORT_LOCATION = os.path.join("..", "output", "classification_stats")
-    FINAL_REPORT_NAME = "baseline_report_verbose.txt"
+    FINAL_REPORT_NAME = "mixed_model_report_verbose.txt"
 
     def __init__(self):
         self.baseline_location = ""

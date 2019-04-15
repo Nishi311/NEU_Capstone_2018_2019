@@ -214,9 +214,10 @@ class UnifiedRecognitionModule(object):
                                                       self.final_reports_sub_dir)
 
         else:
+
             # If NOT doing breakdown, then just set the recognition module's input / output and run.
-            self.recognition_module.input_filepath = self.input_filepath
-            self.recognition_module.report_location = self.final_reports_sub_dir
+            self.recognition_module.input_filepath = photo_file_path
+            self.recognition_module.report_location = self.final_reports_dir
             self.recognition_module.run_module()
 
     def breakdown_and_recognize_image(self, photo_path, breakdown_report_path, final_report_path):
@@ -403,6 +404,6 @@ class UnifiedRecognitionModule(object):
         print(error_message)
         exit(1)
 
-# if __name__ == "__main__":
-#     connecting_module = UnifiedRecognitionModule()
-#     connecting_module.run_module()
+if __name__ == "__main__":
+    connecting_module = UnifiedRecognitionModule()
+    connecting_module.run_module()
