@@ -3,6 +3,8 @@ import threading
 import time
 import glob
 import shutil
+import pyautogui
+import time
 
 from CrackRecognition.scripts.connecting_script import UnifiedRecognitionModule
 
@@ -145,11 +147,47 @@ class RecognitionThreadWrapper(object):
                 else:
                     time.sleep(1)
 
+    def get_image_from_drone(self):
+        pyautogui.PAUSE = 0.001
+        x,y = pyautogui.position()
+
+        try:
+           while True:
+                snapshot = {"position": pyautogui.position()}
+                time.sleep(2)
+                if snapshot["position"] != pyautogui.position():
+                     return
+                else:
+                     break
+        except KeyboardInterrupt:
+              print('\n')
+
+        pyautogui.moveTo(0,90,1)
+        pyautogui.click()
+        pyautogui.moveTo(700, 385, 1)
+        pyautogui.click(button='left')
+        pyautogui.moveTo(650, 535, 1)
+        pyautogui.click(button='left')
+        pyautogui.moveTo(761, 535, 1)
+        pyautogui.click(button='left')
+        pyautogui.moveTo(5000,180,1)
+        pyautogui.click()
+
+        pyautogui.moveTo(x,y)
+
+        return
+
     def check_and_update_queue(self):
         """
         Quick function that checks to see if there are any new photos in the queue directory that are NOT ALREADY
         in the queue list. If so, add them.
         """
+
+        debug = 0;
+
+        if debug != 1:
+            self.get_image_from_drone()
+
         # Get the list of all photos in the directory
         queue_dir_snapshot = glob.glob(os.path.join(self.photo_queue_dir, "*.jpg"))
         # Get a list of photos that are not already in the queue
