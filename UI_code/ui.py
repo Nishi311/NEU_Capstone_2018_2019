@@ -8,12 +8,15 @@ import webbrowser
 import time
 import os
 import glob
+import requests
+import json
 
 app = Flask(__name__)
 THIS_FILE_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIRECTORY = os.path.join(THIS_FILE_DIR_PATH, "static", "generalIO", "output")
 
 CONFIG_PATH = os.path.join(THIS_FILE_DIR_PATH, "../Interfaces/configs")
+GOOGLE_PATH = os.path.join(THIS_FILE_DIR_PATH, "static/google_pass.json")
 QUEUE_DIR_PATH = os.path.join(OUTPUT_DIRECTORY, "..", "queued_photos")
 QUEUE_FILE_PATH = os.path.join(CONFIG_PATH, "recognition_config", "queue.txt")
 
@@ -224,6 +227,25 @@ def get_queued_images():
 
     except Exception as e:
         return jsonify("No images in queue")
+
+@app.route('/auto_building_sides', methods=['GET', 'POST'])
+def get_auto_building_coordinates():
+    address = 'Northeastern'
+    if request.method == 'POST':
+        address = request.form['direction']
+
+    if request.method == 'GET':
+        connection = 'https://maps.googleapis.com/maps/api/geocode/json?address='
+        with open(GOOGLE_PATH) as pass_file:
+            val = json.load(pass_file)['key']
+            print(val)
+        response = requests.get('https://maps.googleapis.com/maps/api/geocode/json?address='+address+'&key='+val)
+        val = response.json()
+        val = val['results'][0]['geometry']['viewport']
+        return jsonify(val)
+    return jsonify("failure")
+
+
 
 @app.route('/add_new_side', methods=['POST'])
 def add_new_side():
