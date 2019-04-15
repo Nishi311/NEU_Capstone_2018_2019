@@ -163,18 +163,20 @@ class RecognitionThreadWrapper(object):
               print('\n')
 
         try:
-        pyautogui.moveTo(0,90,1)
-        pyautogui.click()
-        pyautogui.moveTo(700, 385, 1)
-        pyautogui.click(button='left')
-        pyautogui.moveTo(650, 535, 1)
-        pyautogui.click(button='left')
-        pyautogui.moveTo(761, 535, 1)
-        pyautogui.click(button='left')
-        pyautogui.moveTo(5000,180,1)
-        pyautogui.click()
+            pyautogui.moveTo(0,90,1)
+            pyautogui.click()
+            pyautogui.moveTo(700, 385, 1)
+            pyautogui.click(button='left')
+            pyautogui.moveTo(650, 535, 1)
+            pyautogui.click(button='left')
+            pyautogui.moveTo(800, 535, 1)
+            pyautogui.click(button='left')
+            pyautogui.moveTo(1140, 500, 1)
+            pyautogui.click(button='left')
+            pyautogui.moveTo(5000,180,1)
+            pyautogui.click()
 
-        pyautogui.moveTo(x,y)
+            pyautogui.moveTo(x,y)
         except KeyboardInterrupt:
             return
 
