@@ -162,6 +162,7 @@ class RecognitionThreadWrapper(object):
         except KeyboardInterrupt:
               print('\n')
 
+        try:
         pyautogui.moveTo(0,90,1)
         pyautogui.click()
         pyautogui.moveTo(700, 385, 1)
@@ -174,6 +175,8 @@ class RecognitionThreadWrapper(object):
         pyautogui.click()
 
         pyautogui.moveTo(x,y)
+        except KeyboardInterrupt:
+            return
 
         return
 
