@@ -188,7 +188,7 @@ class RecognitionThreadWrapper(object):
         in the queue list. If so, add them.
         """
 
-        debug = 0;
+        debug = 1;
 
         if debug != 1:
             self.get_image_from_drone()

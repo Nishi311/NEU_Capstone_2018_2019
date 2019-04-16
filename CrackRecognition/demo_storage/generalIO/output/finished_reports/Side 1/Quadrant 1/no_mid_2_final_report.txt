@@ -1,0 +1,20 @@
+Name: no_mid_2
+Coordinates(Lat, Long, Alt): (42.33899644444445, -71.0889153611111, 104.471)
+Crack Detected: Negative
+Pos Threshold: 0.8
+Confidence < Pos Threshold Image count: 12
+Confidence < Pos Threshold Image reports: 
+ no_mid_2_r0_c0
+ no_mid_2_r0_c1
+ no_mid_2_r0_c2
+ no_mid_2_r0_c3
+ no_mid_2_r1_c0
+ no_mid_2_r1_c1
+ no_mid_2_r1_c2
+ no_mid_2_r1_c3
+ no_mid_2_r2_c0
+ no_mid_2_r2_c1
+ no_mid_2_r2_c2
+ no_mid_2_r2_c3
+Confidence > Pos Threshold Image count: 0
+Confidence > Pos Threshold Image reports: 

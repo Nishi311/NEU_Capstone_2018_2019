@@ -1,0 +1,20 @@
+Name: yes_close_large_1
+Coordinates(Lat, Long, Alt): (42.338974750000006, -71.089148, 104.468)
+Crack Detected: Positive
+Pos Threshold: 0.8
+Confidence < Pos Threshold Image count: 9
+Confidence < Pos Threshold Image reports: 
+ yes_close_large_1_r0_c0
+ yes_close_large_1_r0_c1
+ yes_close_large_1_r0_c2
+ yes_close_large_1_r0_c3
+ yes_close_large_1_r1_c2
+ yes_close_large_1_r1_c3
+ yes_close_large_1_r2_c1
+ yes_close_large_1_r2_c2
+ yes_close_large_1_r2_c3
+Confidence > Pos Threshold Image count: 3
+Confidence > Pos Threshold Image reports: 
+ yes_close_large_1_r1_c0
+ yes_close_large_1_r1_c1
+ yes_close_large_1_r2_c0

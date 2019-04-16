@@ -1,0 +1,20 @@
+Name: no_close_1
+Coordinates(Lat, Long, Alt): (42.3390165, -71.08891558333333, 104.526)
+Crack Detected: Negative
+Pos Threshold: 0.8
+Confidence < Pos Threshold Image count: 12
+Confidence < Pos Threshold Image reports: 
+ no_close_1_r0_c0
+ no_close_1_r0_c1
+ no_close_1_r0_c2
+ no_close_1_r0_c3
+ no_close_1_r1_c0
+ no_close_1_r1_c1
+ no_close_1_r1_c2
+ no_close_1_r1_c3
+ no_close_1_r2_c0
+ no_close_1_r2_c1
+ no_close_1_r2_c2
+ no_close_1_r2_c3
+Confidence > Pos Threshold Image count: 0
+Confidence > Pos Threshold Image reports: 

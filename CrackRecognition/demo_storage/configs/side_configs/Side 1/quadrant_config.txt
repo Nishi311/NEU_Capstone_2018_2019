@@ -1,0 +1,11 @@
+Rows: 1
+Columns: 1
+
+Quadrant Name: Quadrant 1
+Cracks Detected: FALSE
+Num_Photos: 3
+Left_Limit (DD): (42.338996, -71.088921)
+Right_Limit (DD): (42.33903411211541, -71.0888234590609)
+Top_Limit (m): 106.0
+Bottom_Limit (m): 100.0
+

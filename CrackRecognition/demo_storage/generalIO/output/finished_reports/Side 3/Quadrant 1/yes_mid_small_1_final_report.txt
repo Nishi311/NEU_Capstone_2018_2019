@@ -1,0 +1,20 @@
+Name: yes_mid_small_1
+Coordinates(Lat, Long, Alt): (42.338933583333336, -71.08892536111111, 104.389)
+Crack Detected: Positive
+Pos Threshold: 0.8
+Confidence < Pos Threshold Image count: 11
+Confidence < Pos Threshold Image reports: 
+ yes_mid_small_1_r0_c0
+ yes_mid_small_1_r0_c1
+ yes_mid_small_1_r0_c2
+ yes_mid_small_1_r0_c3
+ yes_mid_small_1_r1_c0
+ yes_mid_small_1_r1_c2
+ yes_mid_small_1_r1_c3
+ yes_mid_small_1_r2_c0
+ yes_mid_small_1_r2_c1
+ yes_mid_small_1_r2_c2
+ yes_mid_small_1_r2_c3
+Confidence > Pos Threshold Image count: 1
+Confidence > Pos Threshold Image reports: 
+ yes_mid_small_1_r1_c1

@@ -1,0 +1,3 @@
+name: no_close_1_r0_c3
+negative: 0.8981786966323853
+positive: 0.10182129591703415

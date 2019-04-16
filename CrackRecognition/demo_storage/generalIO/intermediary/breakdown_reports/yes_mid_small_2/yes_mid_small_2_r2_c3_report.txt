@@ -1,0 +1,3 @@
+name: yes_mid_small_2_r2_c3
+negative: 0.7361010909080505
+positive: 0.2638988792896271

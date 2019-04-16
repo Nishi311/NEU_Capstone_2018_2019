@@ -1,0 +1,3 @@
+name: no_mid_2_r0_c2
+positive: 0.55076664686203
+negative: 0.44923335313796997

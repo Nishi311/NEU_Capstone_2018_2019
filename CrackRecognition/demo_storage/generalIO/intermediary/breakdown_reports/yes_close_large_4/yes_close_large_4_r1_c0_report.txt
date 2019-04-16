@@ -1,0 +1,3 @@
+name: yes_close_large_4_r1_c0
+positive: 0.6218273639678955
+negative: 0.3781726062297821
